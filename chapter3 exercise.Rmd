@@ -1,0 +1,41 @@
+
+Exercise 3.2 From concerts_obo,
+
+Retrieve the 3rd and 5th concert observations and bind the result value with an object name concerts_sampled.
+
+For the second concert, what are its first show’s time and location? Retrieve the information and bind the value with firstShowInfo.
+
+```{r}
+
+```
+
+
+Exercise 3.3 From concerts_obo, due to Covid-19 the 3rd concert’s 1st show time is changed to “2022/01/31 19:30:00” and the location is changed to “Taichung Opera House”, please change the information
+
+```{r}
+
+```
+
+Exercise 3.4 How do you add the new born if you use JohnsFamilyCopy3$children[3] <-:
+
+
+Copy
+JohnsFamilyCopy3 <- JohnsFamily
+JohnsFamilyCopy3$children[3] <-
+
+```{r}
+
+```
+
+Exercise 3.5 The 5th concert decides to add one more show which shares the same show information as its first show except the date is 2 days later.
+
+```{r}
+
+```
+
+Exercise 3.6 Due to Covid-19 concerts 2, 5, 7 are cancelled. Remove those three concerts from concerts_obo.
+
+```{r}
+
+```
+
