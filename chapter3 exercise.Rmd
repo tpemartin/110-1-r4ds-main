@@ -1,0 +1,102 @@
+
+Exercise 3.2 From concerts_obo,
+
+Retrieve the 3rd and 5th concert observations and bind the result value with an object name concerts_sampled.
+
+For the second concert, what are its first show’s time and location? Retrieve the information and bind the value with firstShowInfo.
+
+```{r}
+concerts_obo <-
+  jsonlite::fromJSON("https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17", simplifyDataFrame = F)
+```
+
+```{r}
+firstShowInfo <- 
+  concerts_obo[[2]]$showInfo[[1]][c("time","location")]
+firstShowInfo # name call to show answer
+```
+
+
+Exercise 3.3 From concerts_obo, due to Covid-19 the 3rd concert’s 1st show time is changed to “2022/01/31 19:30:00” and the location is changed to “Taichung Opera House”, please change the information
+
+```{r}
+concerts_obo -> concerts_oboCopy
+concerts_oboCopy[[3]]$showInfo[[1]]$time <- "2022/01/31 19:30:00"
+concerts_oboCopy[[3]]$showInfo[[1]]$location <- "Taichung Opera House"
+
+concerts_oboCopy[[3]]$showInfo[[1]][c("time", "location")] # name call to show answer
+```
+
+Exercise 3.4 How do you add the new born if you use JohnsFamilyCopy3$children[3] <-:
+
+```{r}
+JohnsFamily <-
+  list(
+    name = "John", 
+    age = 35,
+    spouse = list(
+      name = "Mary", 
+      age = 32),
+    children = list(
+      list(
+        name = "Bill", 
+        age = 5),
+      list(
+        name = "Jane", 
+        age = 3)
+    )
+  )
+```
+
+```{r}
+JohnsFamilyCopy3 <- JohnsFamily
+JohnsFamilyCopy3$children[3] <- 
+  list(
+    list(
+      name="Lisa",
+      age=0
+    )
+  )
+
+JohnsFamilyCopy3$children[3] # name call to show answer
+```
+
+
+Exercise 3.5 The 5th concert decides to add one more show which shares the same show information as its first show except the date is 2 days later.
+
+```{r}
+concerts_obo -> concerts_oboCopy
+# add one more show, and
+# shares the same show information as its first show
+
+# name call to retrieve a non-existent element value: concerts_oboCopy[[5]]$showInfo[[2]]
+# give that name call retrieval the value you want use binding <- 
+concerts_oboCopy[[5]]$showInfo[[2]] <- 
+  concerts_oboCopy[[5]]$showInfo[[1]]
+
+# except the date is 2 days later
+#  modify new show's day information
+
+# check wrong values to be corrected
+concerts_oboCopy[[5]]$showInfo[[2]]$time 
+concerts_oboCopy[[5]]$showInfo[[2]]$endTime  
+# correct the values
+concerts_oboCopy[[5]]$showInfo[[2]]$time <-
+  "2022/05/16 10:00:00" 
+concerts_oboCopy[[5]]$showInfo[[2]]$endTime <-
+  "2022/05/17 22:00:00"
+
+concerts_oboCopy[[5]]$showInfo[[2]] # name call to show answer
+```
+
+Exercise 3.6 Due to Covid-19 concerts 2, 5, 7 are cancelled. Remove those three concerts from concerts_obo.
+
+```{r}
+concerts_obo -> concerts_oboCopy
+concerts_oboCopy[-c(2, 5, 7)] -> concerts_oboCopy
+# Since concerts_obo is a list, you can also do
+concerts_obo -> concerts_oboCopy
+concerts_oboCopy[c(2,5,7)] <- NULL
+
+```
+
