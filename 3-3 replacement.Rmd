@@ -1,0 +1,27 @@
+
+```{r}
+JohnsFamily <-
+  list(
+    name = "John", 
+    age = 35,
+    spouse = list(
+      name = "Mary", 
+      age = 32),
+    children = list(
+      list(
+        name = "Bill", 
+        age = 5),
+      list(
+        name = "Jane", 
+        age = 3)
+    )
+  )
+```
+
+```{r}
+JohnsFamilyCopy <- JohnsFamily
+
+JohnsFamilyCopy[[1]] <- "Watson" 
+JohnsFamilyCopy[[1]]
+```
+

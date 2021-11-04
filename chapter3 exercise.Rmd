@@ -14,6 +14,7 @@ concerts_obo <-
 firstShowInfo <- 
   concerts_obo[[2]]$showInfo[[1]][c("time","location")]
 firstShowInfo # name call to show answer
+
 ```
 
 
@@ -25,6 +26,7 @@ concerts_oboCopy[[3]]$showInfo[[1]]$time <- "2022/01/31 19:30:00"
 concerts_oboCopy[[3]]$showInfo[[1]]$location <- "Taichung Opera House"
 
 concerts_oboCopy[[3]]$showInfo[[1]][c("time", "location")] # name call to show answer
+
 ```
 
 Exercise 3.4 How do you add the new born if you use JohnsFamilyCopy3$children[3] <-:
@@ -62,6 +64,7 @@ JohnsFamilyCopy3$children[3] # name call to show answer
 ```
 
 
+
 Exercise 3.5 The 5th concert decides to add one more show which shares the same show information as its first show except the date is 2 days later.
 
 ```{r}
@@ -87,6 +90,7 @@ concerts_oboCopy[[5]]$showInfo[[2]]$endTime <-
   "2022/05/17 22:00:00"
 
 concerts_oboCopy[[5]]$showInfo[[2]] # name call to show answer
+
 ```
 
 Exercise 3.6 Due to Covid-19 concerts 2, 5, 7 are cancelled. Remove those three concerts from concerts_obo.

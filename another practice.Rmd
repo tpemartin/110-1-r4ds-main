@@ -1,0 +1,8 @@
+
+```{r}
+# checking how many element values
+length(JohnsFamily)
+# checking element names
+names(JohnsFamily)
+```
+
