@@ -1,0 +1,105 @@
+
+# Exercise 4.1 Parse customerExperience into an ordered factor atomic vector:
+
+  * ordered: can compare magnitude of different responses. `factor(..., ordered= T)`
+  
+  * factor: `factor()`
+
+```{r}
+customerExperience <- c('very happy','very happy','satisfied','satisfied','satisfied','very happy','bad','bad','satisfied','satisfied','bad','happy','happy','very happy','happy','happy','satisfied','very happy','very happy','satisfied','satisfied','very happy','satisfied','bad','very happy','very bad','very happy','bad','bad','very bad')
+customerExperience_fct_ordered <- 
+  factor(
+    customerExperience, 
+    levels = c('very happy','happy','satisfied','bad','very bad'),
+    ordered = T
+  )
+
+customerExperience_fct_ordered <- 
+  factor(
+    customerExperience, 
+    levels = c('very bad','bad','satisfied','happy','very happy'),
+    ordered = T
+  )
+
+customerExperience_fct_ordered[[1]] > 'bad' # "very happy" > 'bad'
+
+table(customerExperience_fct_ordered)
+```
+
+## exercise 4.2
+
+```{r}
+subsidiaries <- list() # declare
+subsidiaries$boston <- c("2020 Oct. 13 15:00:00", "2019 Apr. 10 09:30:00") # boston time zone
+subsidiaries$mykonos <- c("14 Jan., 2021 03:27:00", "8 Aug., 2020 11:20:00") # mykonos time zone
+```
+
+Parsing a date/time character vector without tz setting can yield wrong result.
+
+Also make sure you choose the right tzone expression. 
+```{r}
+subsidiaries <- list()
+subsidiaries$boston <- lubridate::ymd_hms(c("2020 Oct. 13 15:00:00", "2019 Apr. 10 09:30:00"),
+  tz="America/New_York")# boston time zone
+subsidiaries$mykonos <- lubridate::dmy_hms(c("14 Jan., 2021 03:27:00", "8 Aug., 2020 11:20:00"),
+  tz="Europe/Athens") # mykonos time zone
+```
+
+
+```{r}
+lubridate::with_tz(
+  c(
+    subsidiaries$boston,
+    subsidiaries$mykonos
+  ),
+  tz="Asia/Calcutta"
+)
+```
+
+## exercise 4.3
+
+```{r}
+dfExercise <- list()
+dataSet1 <- list(
+  name=c("John", "Mary", "Ben"),
+  age=c(33, 45, NA)
+)
+# 2
+dfExercise$data1 <-
+  data.frame(
+    dataSet1
+  )
+
+# 3
+
+dataSet1$children[[1]] <- list(
+  list(name="Jane", age=2))
+dataSet1$children[[2]] <- list(
+  list(name="Bill", age=3),
+  list(name="Ken", age=0))
+dataSet1$children[[3]] <- list(
+  list(name="William", age=10))
+
+# 4
+dfExercise$data2 <- list2DF(dataSet1)
+```
+
+
+**Declare-and-add** method on **list** when creating a nested list using multiple chained-retrievals, there is a rule to remember:
+
+  * If `[[]]` is used, then it must be at the last. 
+
+```{r}
+l0 <- list() # declare
+l0[[1]]$name <- "John" # won't work
+l0$name[[1]] <- "John" # work
+```
+  
+```{r}
+l0$secondPerson$name <- "Jane" # work
+l0$secondPerson$children[[1]] <- "Albigail" # work
+l0$secondPerson[[3]]$habit <- "tennis" # won't work
+```
+
+
+
