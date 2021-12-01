@@ -1,0 +1,39 @@
+How do you sum the following Chinese numbers? 
+```{r}
+c('參','貮','貮','貮','壹','貮','參','貮','參','參')
+```
+
+```{r}
+fct <- factor(
+  c('參','貮','貮','貮','壹','貮','參','貮','參','參'),
+  levels=c('壹','貮','參')
+)
+sum(as.numeric(fct))
+```
+
+## 4.7
+
+The following is 5 to 9 in Persian language:
+
+```{r}
+persian5to9 <- c("۵", "۶", "۷", "۸", "۹")
+
+```
+
+How do you sum the following Persian numbers?
+```{r}
+persian0 <- c('۶','۹','۸','۹','۶','۸','۸','۵','۹','۹')
+
+```
+
+```{r}
+persian5to9_map2_5to9 <- 5:9
+fct_persian0 <- factor(
+  persian0, 
+  levels=persian5to9
+)
+persianMap2_5to9Position <- 
+  as.numeric(fct_persian0)
+sum(persian5to9_map2_5to9[persianMap2_5to9Position])
+```
+
