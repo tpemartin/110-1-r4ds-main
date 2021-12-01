@@ -37,3 +37,39 @@ persianMap2_5to9Position <-
 sum(persian5to9_map2_5to9[persianMap2_5to9Position])
 ```
 
+# 4.8
+
+A school adopt letter grade system from C to A+ as follows:
+
+```{r}
+letter_grades <- c("C", "B-", "B", "B+", "A-", "A", "A+")
+```
+
+However, when there is need to calulate GPA, they convert each letter grade to each value in the following numeric_grades vector:
+
+```{r}
+numeric_grades <- c(2, 2.5, 3, 3.5, 4, 4.5, 5)
+```
+
+
+A student with the following letter grades need to convert them to numeric_grades:
+
+```{r}
+studentGrades <- c('B','A','A+','B+','A-','B','B-','B','A+','B+','C','B-','B-','B','C','C','B+','B','B+','B')
+```
+
+
+He asked you for help. You layout the following programming plan:
+
+```{r}
+studentLetterGrades <- {
+  # Task map c("C", "B-", "B", "B+", "A-", "A", "A+") to c(2, 2.5, 3, 3.5, 4, 4.5, 5)
+  
+  # step1: for each grade in studentGrades find its position in c("C", "B-", "B", "B+", "A-", "A", "A+") so if studentGrades = c("C","A-"), step1 = c(1, 5) since c("C", "B-", "B", "B+", "A-", "A", "A+")[c(1, 5)] will give him "C", "A-"
+  
+  # step2: Use step1 result as position indices to retrieve from c(2, 2.5, 3, 3.5, 4, 4.5, 5). From previous example, step1=c(1, 5), then  c(2, 2.5, 3, 3.5, 4, 4.5, 5)[step1] will give him c(2, 4)
+  
+}
+```
+
+Complete the programming block.
