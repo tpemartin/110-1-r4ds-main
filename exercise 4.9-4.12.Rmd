@@ -173,3 +173,6 @@ drugSetPick |>
   sum()
 ```
 
+***
+
+Extra: <https://github.com/tpemartin/110-1-r4ds-main/blob/main/exercise%204.12%20extra.Rmd>
