@@ -1,0 +1,175 @@
+## 4.9
+
+Run exercise 1 from Exercise section to create `johnDoe`. How many dead bodies were discovered after year 2012 (exclude 2012)?
+
+```{r}
+johnDoe <- list()
+johnDoe$source[[1]] <- "https://www.moj.gov.tw/2204/2771/2773/76135/post"
+johnDoe$source[[2]] <- "https://docs.google.com/spreadsheets/d/1g2AMop133lCAsmdPhsH3lA-tjiY5fkGIqXqwdknwEVk/edit?usp=sharing"
+googlesheets4::read_sheet(
+  johnDoe$source[[2]]
+) -> johnDoe$data
+```
+
+```{r, echo=F}
+pick <- list()
+pick$discovered_after_2012 <-  johnDoe$data$發現年 > 101
+table(pick$discovered_after_2012, useNA="always")
+sum(pick$discovered_after_2012, na.rm=T)
+```
+
+```{r}
+pick9 <- johnDoe$data[[7]] > 101
+sum(pick9, na.rm = T)
+```
+
+```{r}
+yearPick <- johnDoe$data[["發現年"]] > 101
+yearPick |>
+  na.omit() |>
+  sum()
+```
+
+```{r}
+johnDoe_discovery <- johnDoe[["data"]][["發現年"]] > ("2002")
+sum(johnDoe_discovery,na.rm = T)
+```
+
+  * question is about 2012, not 2002.
+  
+  * `johnDoe[["data"]][["發現年"]]` is a numeric class, but "2002" is a character class. (Comparison should have vectors with the SAME class)
+  
+## Extra knowledge
+
+```{r}
+johnDoe_discovery <- johnDoe[["data"]][["發現年"]] > ("2002")
+# the same as
+johnDoe$data$發現年 |> as.character() > "2002"
+```
+
+When comparing characters, your computer system's collateral setup (**collating sequence**) determines the outcome. 
+  
+   *  For character of numbers, like "0", "1", "2",.., "9". "0" is the smallest and "9" is the largest.
+   
+   *  When there are multiple bytes, like "42" (2 bytes), "232" (3 bytes), if the first byte of the string wins, then that whole string wins. The first byte of "42" is "4", and the first byte ot "232" is "2"; "4" defeats "2", so "42" is larger than "232"
+   
+```{r}
+"42" > "232"
+```
+
+   * `c("74", "99" , "100", "102", "104")` which will defeat "101"
+  
+```{r}
+c("74", "99" , "100", "102", "104") > "101"
+```
+
+
+```{r}
+johnDoe$data$發現年 |> range()
+johnDoe$data$發現年 |> range(na.rm=T)
+johnDoe$data$發現年 %in% 73:99 |> sum()
+```
+
+## 4.10
+
+How many dead bodies in `johnDoe` have age upper limit (年齡範圍上限) equal to 0?
+
+```{r, echo=FALSE}
+pick$age_upper_limit_0 <-
+  johnDoe$data$年齡範圍上限 == 0
+pick$age_upper_limit_0 |> sum()
+```
+
+```{r}
+pick10 <- johnDoe$data[[4]] == 0
+sum(pick10, na.rm = T)
+```
+
+```{r}
+agePick <- johnDoe$data[["年齡範圍上限"]] == 0
+agePick |>
+  na.omit() |>
+  sum()
+```
+
+## 4.11
+
+
+For the following two vectors:
+```{r}
+num_input <- 
+  c(1,NA,NA,1,1,NA,1,1,1,NA,NA,1,NA,NA,NA,1,NA,1,NA,1,1,1,1,NA,NA,NA,NA,NA,NA,1)
+chr_input <- 
+  c('NA','1','1','1','NA','NA','1','1','1','1','NA','1','NA','1','1','1','NA','NA','NA','1','NA','NA','NA','NA','NA','1','1','NA','NA','NA')
+```
+
+  1. Find all `NA`'s locations in `num_input`.
+  
+  2. Find all `'NA'`'s locations in `chr_input`. (Be careful. Only `NA` truly mean not available. `'NA'` is an available value with character phrase NA as the value.)
+
+```{r}
+# 1.
+num_input |> 
+  is.na() |> which()
+
+# 2.
+(chr_input == 'NA') |> which()
+
+```
+
+```{r}
+# 1
+which(is.na(num_input))
+
+# 2
+which(is.element(chr_input,'NA'))
+```
+
+## 4.12
+
+Run exercise 3 from Exercise section to obtain `drug`. 
+
+  1. How many cases have 毒品品項 of 安非他命?
+  
+  2. How many cases have 毒品品項 belonging to the following set?
+  
+```{r}
+drugSet <- c('安非他命','甲基安非他命','二甲氧基安非他命(DMA)','左旋甲基安非他命','3,4-亞甲基雙氧安非他命(MDA)')
+```
+
+```{r}
+drug <- list()
+drug$source[[1]] <- 
+  "https://docs.google.com/spreadsheets/d/17ID43N3zeXqCvbUrc_MbpgE6dH7BjLm8BHv8DUcpZZ4/edit?usp=sharing"
+drug$data <- 
+  googlesheets4::read_sheet(
+    drug$source[[1]]
+  )
+drugSet <- c('安非他命','甲基安非他命','二甲氧基安非他命(DMA)','左旋甲基安非他命','3,4-亞甲基雙氧安非他命(MDA)')
+```
+
+
+```{r}
+# 1
+pick12_1 <- drug$data[[9]] == '安非他命'
+sum(pick12_1, na.rm = T)
+
+# 2
+pick12_2 <- drug$data[[9]] %in% drugSet
+sum(pick12_2, na.rm = T)
+```
+
+```{r}
+# 1.
+drugPick <- drug$data[["kind"]] == "安非他命"
+drugPick |>
+  na.omit() |>
+  sum()
+
+# 2.
+drugSetPick <- drug$data[["kind"]] %in% drugSet
+drugSetPick |>
+  na.omit() |>
+  sum()
+```
+

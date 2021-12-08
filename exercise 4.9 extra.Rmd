@@ -1,0 +1,37 @@
+
+The question excludes 101, `>=` should be `>`
+```{r}
+yearPick <- johnDoe$data[["發現年"]] >= 101
+```
+
+
+ 
+```{r}
+johnDoe_discovery <- johnDoe[["data"]][["發現年"]] > ("2002")
+# the same as
+johnDoe$data$發現年 |> as.character() > "2002"
+```
+
+When comparing characters, your computer system's collateral setup (**collating sequence**) determines the outcome. 
+  
+   *  For character of numbers, like "0", "1", "2",.., "9". "0" is the smallest and "9" is the largest.
+   
+   *  When there are multiple bytes, like "42" (2 bytes), "232" (3 bytes), if the first byte of the string wins, then that whole string wins. The first byte of "42" is "4", and the first byte ot "232" is "2"; "4" defeats "2", so "42" is larger than "232"
+   
+```{r}
+"42" > "232"
+```
+
+   * `c("74", "99" , "100", "102", "104")` which will defeat "101"
+  
+```{r}
+c("74", "99" , "100", "102", "104") > "101"
+```
+
+
+```{r}
+johnDoe$data$發現年 |> range()
+johnDoe$data$發現年 |> range(na.rm=T)
+johnDoe$data$發現年 %in% 73:99 |> sum()
+```
+

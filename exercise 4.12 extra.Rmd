@@ -1,0 +1,44 @@
+
+```{r}
+View(drug$data)
+```
+
+  * The first row is actually feature names.
+
+***
+
+Some functions in R can **get** you values AND be used to **set** values at the same time. For this type of functions, its **Usage** is usually written as
+
+```
+fun(input1)
+fun(input1) <- 
+```
+
+```{r}
+?names
+?levels
+```
+
+  * `fun(input1) <- ` allows you to **set** the value returned by `fun(input1)`. 
+  
+  * `fun(input1) <- RHS` must habe `RHS` the same structure as `fun(input1)` return.
+  
+```{r}
+names(drug$data) # the structure is a character vecotr of 10
+newNames <- drug$data[1, ]
+newNames |> class()
+newNames |>
+  as.character() -> names(drug$data)
+```
+
+```{r}
+drug$data2 <- drug$data[-1, ]
+# 1
+pick12_1 <- drug$data2$毒品品項 == '安非他命'
+sum(pick12_1, na.rm = T)
+
+# 2
+pick12_2 <- drug$data2$毒品品項 %in% drugSet
+sum(pick12_2, na.rm = T)
+```
+

@@ -1,3 +1,5 @@
+# 4.6
+
 How do you sum the following Chinese numbers? 
 ```{r}
 c('參','貮','貮','貮','壹','貮','參','貮','參','參')
@@ -11,13 +13,33 @@ fct <- factor(
 sum(as.numeric(fct))
 ```
 
-## 4.7
+# 4.7
 
 The following is 5 to 9 in Persian language:
 
 ```{r}
-persian5to9 <- c("۵", "۶", "۷", "۸", "۹")
-
+persian5to9 <- c(
+  "۵", # 1
+  "۶", # 2
+  "۷", # 3
+  "۸", # 4
+  "۹" #5
+  )
+num5to9 <- c(
+  5, #1
+  6, #2
+  7, #3
+  8, #4
+  9 #5
+)
+print(persian5to9)
+print(as.numeric(fct_persian0))
+sum(as.numeric(fct_persian0))
+num5to9 <- 5:9
+num5to9 <- c(5, 6, 7, 8, 9)
+num5to9
+persian5to9[[2]]
+sum(num5to9[as.numeric(fct_persian0)])
 ```
 
 How do you sum the following Persian numbers?
@@ -25,6 +47,16 @@ How do you sum the following Persian numbers?
 persian0 <- c('۶','۹','۸','۹','۶','۸','۸','۵','۹','۹')
 
 ```
+
+```{r}
+fct_persian0 <- 
+  factor(
+    persian0,
+    levels=persian5to9
+  )
+as.numeric(fct_persian0)
+```
+
 
 ```{r}
 persian5to9_map2_5to9 <- 5:9
@@ -64,11 +96,17 @@ He asked you for help. You layout the following programming plan:
 ```{r}
 studentLetterGrades <- {
   # Task map c("C", "B-", "B", "B+", "A-", "A", "A+") to c(2, 2.5, 3, 3.5, 4, 4.5, 5)
-  
   # step1: for each grade in studentGrades find its position in c("C", "B-", "B", "B+", "A-", "A", "A+") so if studentGrades = c("C","A-"), step1 = c(1, 5) since c("C", "B-", "B", "B+", "A-", "A", "A+")[c(1, 5)] will give him "C", "A-"
-  
+  step1 <- as.numeric(
+    factor(
+      studentGrades,
+      levels=letter_grades
+    )
+  )
+  step1
+  letter_grades
   # step2: Use step1 result as position indices to retrieve from c(2, 2.5, 3, 3.5, 4, 4.5, 5). From previous example, step1=c(1, 5), then  c(2, 2.5, 3, 3.5, 4, 4.5, 5)[step1] will give him c(2, 4)
-  
+  numeric_grades[step1]
 }
 ```
 

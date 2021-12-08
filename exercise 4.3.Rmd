@@ -1,0 +1,49 @@
+
+
+## exercise 4.3
+
+```{r}
+dfExercise <- list()
+dataSet1 <- list(
+  name=c("John", "Mary", "Ben"),
+  age=c(33, 45, NA)
+)
+# 2
+dfExercise$data1 <-
+  data.frame(
+    dataSet1
+  )
+
+# 3
+
+dataSet1$children[[1]] <- list(
+  list(name="Jane", age=2))
+dataSet1$children[[2]] <- list(
+  list(name="Bill", age=3),
+  list(name="Ken", age=0))
+dataSet1$children[[3]] <- list(
+  list(name="William", age=10))
+
+# 4
+dfExercise$data2 <- list2DF(dataSet1)
+```
+
+
+**Declare-and-add** method on **list** when creating a nested list using multiple chained-retrievals, there is a rule to remember:
+
+  * If `[[]]` is used, then it must be at the last. 
+
+```{r}
+l0 <- list() # declare
+l0[[1]]$name <- "John" # won't work
+l0$name[[1]] <- "John" # work
+```
+  
+```{r}
+l0$secondPerson$name <- "Jane" # work
+l0$secondPerson$children[[1]] <- "Albigail" # work
+l0$secondPerson[[3]]$habit <- "tennis" # won't work
+```
+
+
+
