@@ -30,6 +30,9 @@ yearPick |>
   sum()
 ```
 
+***
+
+This is a wrong answer
 ```{r}
 johnDoe_discovery <- johnDoe[["data"]][["發現年"]] > ("2002")
 sum(johnDoe_discovery,na.rm = T)

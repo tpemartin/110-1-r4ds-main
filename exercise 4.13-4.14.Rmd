@@ -1,0 +1,87 @@
+# 4.13
+
+```{r}
+johnDoe <- list()
+johnDoe$source[[1]] <- "https://www.moj.gov.tw/2204/2771/2773/76135/post"
+johnDoe$source[[2]] <- "https://docs.google.com/spreadsheets/d/1g2AMop133lCAsmdPhsH3lA-tjiY5fkGIqXqwdknwEVk/edit?usp=sharing"
+googlesheets4::read_sheet(
+  johnDoe$source[[2]]
+) -> johnDoe$data
+```
+
+1.For those whose reported unit (通報機構) is not NA, what are their records? (in other words, construct a reported-unit-not-NA subsample)
+
+2.For those dead bodies reported (通報機構) by “海巡隊” (use =="海巡隊" here. Ignore other similar unit names), what are their death types (死亡方式描述)? How many bodies in each type?
+
+3.For those whose death type (死亡方式描述) is 不詳 or 他殺, what are their discovered counties (發現縣市)? How many such bodies in each counties?
+
+```{r}
+# 1
+pick13_1 <- !is.na(johnDoe$data$通報機關名稱)
+johnDoe$data[pick13_1, ] -> subsample
+View(subsample)
+# 2
+pick13_2 <- johnDoe$data$通報機關名稱 == "海巡隊"
+johnDoe$data$死亡方式描述[which(pick13_2)]
+## use which(pick) will ignore those NA in pick. Nice trick 
+table(johnDoe$data$死亡方式描述[which(pick13_2)])
+# 3
+pick13_3 <- johnDoe$data$死亡方式描述 == "不詳" | johnDoe$data$死亡方式描述 == "他殺"
+johnDoe$data$發現縣市 [which(pick13_3)]
+table(johnDoe$data$發現縣市 [which(pick13_3)])
+```
+
+  * `pick` will keep NA. `which(pick)` will not.
+  
+```{r}
+# This is okay as well
+pick13_3 <- johnDoe$data$死亡方式描述 %in% c("不詳", "他殺")
+
+# This is not okay.
+pick3<-johnDoe[["data"]][["死亡方式描述"]]==c("不詳","他殺")
+country<-johnDoe[["data"]][["發現縣市"]][pick3]
+table(country)
+
+```
+
+## Exercise 4.14 
+
+Get fraud$data from exercise 3 in Exercise section. The following questions exclude any NA.
+
+1. Convert 通報日期 to a date class. Is there any NA after conversion?
+
+2. How many LINE accounts were reported as a fraud after 2018 (i.e. starting from 2019-01-01)?
+
+3. How many LINE accounts were reported as a fraud between year 2019 and 2020?
+
+
+```{r}
+fraud <- list()
+fraud$source[[1]] <- "https://data.gov.tw/dataset/78432"
+fraud$source[[2]] <- "https://data.moi.gov.tw/MoiOD/System/DownloadFile.aspx?DATA=7F6BE616-8CE6-449E-8620-5F627C22AA0D"
+fraud$data <- readr::read_csv(fraud$source[[2]])
+```
+
+
+```{r}
+fraud$data$通報日期 |>
+  lubridate::ymd() |> is.na() -> pick_na
+fraud$data[pick_na, ] |> View()
+```
+
+```{r}
+# 1
+fraud$data$通報日期 |> class()
+fraud$data$通報日期 |>
+  lubridate::ymd() -> fraud$data$通報日期
+any(is.na(fraud$data$通報日期))
+# 2
+pick14_2 <- fraud$data$通報日期 >= lubridate::ymd("2019-01-01")
+sum(pick14_2, na.rm = T)
+# 3
+pick14_3 <- fraud$data$通報日期 >= lubridate::ymd("2019-01-01") & fraud$data$通報日期 < lubridate::ymd("2021-01-01")
+sum(pick14_3, na.rm = T)
+```
+
+  * If the class of `fraud$data$通報日期` is character, 
+  `fraud$data$通報日期 >= lubridate::ymd("2019-01-01")` will convert `fraud$data$通報日期` on the run for you implicitly.
