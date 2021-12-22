@@ -1,0 +1,185 @@
+## Ex 4.15
+
+```{r}
+johnDoe <- list()
+johnDoe$source[[1]] <- "https://www.moj.gov.tw/2204/2771/2773/76135/post"
+johnDoe$source[[2]] <- "https://docs.google.com/spreadsheets/d/1g2AMop133lCAsmdPhsH3lA-tjiY5fkGIqXqwdknwEVk/edit?usp=sharing"
+googlesheets4::read_sheet(
+  johnDoe$source[[2]]
+) -> johnDoe$data
+```
+
+## Ex 4.16
+
+In johnDoe data,
+
+1. Find the subsample of those whose report unit (通報機關名稱) has the term “海巡隊” (i.e. detect “海巡隊”) in its name.
+
+2. How many different different 海巡隊 are there? Each reported how many dead bodies.
+
+```{r}
+# 1
+pick15_1 <- stringr::str_detect(johnDoe$data$通報機關名稱, "海巡隊")
+johnDoe$data[which(pick15_1), ] -> subsample
+View(subsample)
+# 2
+subsample$通報機關名稱 |> unique() |> length()
+subsample$通報機關名稱 |> table() |> View()
+table(johnDoe$data$通報機關名稱[which(pick15_1)])
+```
+
+Exercise 4.16 In johnDoe data set,
+
+1. Add a column called 發現日期 to johnDoe$data which is a date class vector.
+
+2. How many dead bodies have no discovered dates?
+
+3. Which month has the highest report number?
+
+```{r}
+# 1
+chr_dates <- paste(
+  johnDoe$data$發現年 + 1911, 
+  johnDoe$data$發現月, 
+  johnDoe$data$發現日, 
+  sep="-"
+)
+johnDoe$data$發現日期 <- lubridate::ymd(chr_dates)
+## johnDoe$data$發現日期 |> class()
+# 2
+johnDoe$data$發現日期 |> is.na() |> sum()
+## from is.na() to sum() there is no need for as.numeric()
+
+# 3
+johnDoe$data$發現月 |> table() -> tb_months
+tb_months |> max() -> maxValue
+whichIsMax <- which(tb_months == maxValue)
+tb_months[whichIsMax]
+
+## Or
+johnDoe$data$發現月 |> table() -> tb_months
+whichIsMax <- which.max(table(johnDoe$data$發現月))
+tb_months[whichIsMax]
+```
+
+## Exercise 4.17 In johnDoe data set,
+
+
+  1. create a factor column called `發現季節` with levels, "spring", "summer", "fall" and "winter. They cover months 3-5 (for spring), 6-8 (for summer), 9-11 (for fall), and 12-2 (for winter)
+
+```{r, echo=FALSE}
+.season <- johnDoe$data$發現月 |> factor()
+levels(.season) <-
+  c(
+    rep("winter", 2),
+    rep("spring", 3),
+    rep("summer", 3),
+    rep("fall", 3),
+    "winter"
+  )
+johnDoe$data$發現季節 <- .season
+```
+
+  2. In each season, how many dead bodies were discovered?
+
+```{r, echo=FALSE}
+johnDoe$data$發現季節 |> table() |> View()
+```
+
+***
+
+How to declare a vector with fixed length.
+
+  * <https://github.com/linttttt/110-1-r4ds-main/blob/6a5effdd83d10c04d234fb6189617c9db086eb87/studyCH4(EX).Rmd#L318>
+  
+  * <https://github.com/raychiu135/110-1-r4ds-main/blob/7764b84117a53c6a8b456a78eb9477a99909df9b/exercise_4.17.rmd#L29>
+
+## Ex 4.18
+
+Exercise 4.18 Summarise majors.
+
+```{r}
+majors <- c('economics','economics',NA,'economics','economics','economics','economics','statistics','law','economics','law')
+
+paste(
+  'Summarise majors: There are', 
+  length(majors), 'observations. Among them,', 
+  sum(majors %in% 'economics'), 'major economics,', 
+  sum(majors %in% 'statistics'), 'majors statistics and', 
+  sum(majors %in% 'law'), 'major law.', 
+  sum(majors %in% NA), 'person has missing major.', 
+  sep=' '
+  )
+```
+
+  * or `sum(majors == 'economics', na.rm=T)`
+
+## Ex 4.19
+
+Exercise 4.19 Obtain `wdi` object from exercise 5 of the Exercise section. The following questions focus **only** on year 2000 (which means all the following questions implicitly start with the expression, **for those from year 2000**.)
+
+```{r, echo=F}
+data2000 <- wdi$data |> subset(year==2000)
+View(data2000)
+```
+
+  1. How many observations are there?
+  
+  2. The followings are `iso2c` values that represent a **region** but not a country. Take a subsample that excludes those **region** (i.e. a subsample that consists of countries),
+
+```{r}
+iso2c_nonCountry <- c('ZH','ZI','1A','S3','B8','V2','Z4','4E','T4','XC','Z7','7E','T7','EU','F1','XE','XD','XF','ZT','XH','XI','XG','V3','ZJ','XJ','T2','XL','XO','XM','XN','ZQ','XQ','T3','XP','XU','XY','OE','S4','S2','V4','V1','S1','8S','T5','ZG','ZF','T6','XT','1W')
+```
+  
+```{r, echo=F}
+data2000 |> subset(!(iso2c %in% iso2c_nonCountry)) -> 
+  subsample2000
+View(subsample2000)
+```
+
+The following questions focus on the subsample. 
+
+  3. How many countries are there?
+
+```{r, echo=FALSE}
+subsample2000$country |> unique() |> length()
+subsample2000$country |> length()
+```
+
+
+  4. Regarding **Energy use (kg of oil equivalent per capita)**. Complete the following summary:
+
+> For Energy use (kg of oil equivalent per capita), there are ... observations with ... missing values. Excluding missing values, the range of energy use is between ... and ... kg/per capita of oil equivalent with median usage of ... and mean usage of ... .
+
+The `wdi$data`'s feature meanings (other than iso2c, year, and country) can be found at:
+```{r}
+browseURL(wdi$meta)
+```
+
+
+```{r, echo=F}
+analysis2 <- list()
+View(subsample2000)
+.series <- subsample2000$EG.USE.PCAP.KG.OE
+.series |>
+  is.na() |> sum() -> .na
+.series
+.series |> range(na.rm=T) -> .range
+.series |> mean(na.rm=T) -> .mean
+.series |> median(na.rm=T) -> .median
+
+featureXsummary <- 
+  list(
+    total_obs = length(.series),
+    missing_value_count=.na,
+    range=list(.range),
+    mean= .mean,
+    median=.median
+  )
+analysis2$summaryByFeature$`Energy use (kg of oil equivalent per capita)`$description <- featureXsummary |> list2DF()
+
+analysis2$summaryByFeature$`Energy use (kg of oil equivalent per capita)`$description 
+
+# saveRDS(analysis2, "data/analysis2.Rds")
+```
+
