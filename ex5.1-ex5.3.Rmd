@@ -1,0 +1,217 @@
+## Exercise 5.1 
+Load the following data set:
+
+```{r exercise5-1}
+# Observation by observation
+concerts_obo <-
+  jsonlite::fromJSON("https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17", simplifyDataFrame = F)
+
+```
+
+Data set `concerts_obo` has difference performance information as its observations. For each performance, there can be more than one show, and each show's information is contained inside the observation's `showInfo` element. 
+
+  1. How many shows does the 5th performance have?
+
+```{r, echo=FALSE}
+concerts_obo[[5]]$showInfo |> length()
+```
+ 
+  2. If we are to find out the number of shows **for each** performance, what is the **.x-pattern**?
+
+```{r, echo=FALSE}
+# Assume number_of_shows object exists
+number_of_shows[[.x]] <- concerts_obo[[.x]]$showInfo |> length()
+```
+  
+  3. Find out the number of shows **for each** performance, and put the answer as an integer vector under `analysis$number_of_shows`. (i.e. `analysis$number_of_shows[[5]]` will show your answer in 1.)
+  
+```{r, echo=FALSE}
+number_of_shows <- vector("integer", length(concerts_obo))
+for(.x in seq_along(concerts_obo)){
+  number_of_shows[[.x]] <- concerts_obo[[.x]]$showInfo |> length()
+}
+
+print(number_of_shows)
+```
+
+  4. Construct a data frame with columns, **title**, **date**, **location** and **locationName**, where **title** comes from each observation's title, and the rest three are from each observation's 1st showInfo. In addition, **date** column has to be "POSIXct" "POSIXt" class with Taipei time zone.
+  
+```{r, echo=F}
+number_of_concerts <- length(concerts_obo)
+.titles <- .dates <- .locations <- .locationNames <- character(number_of_concerts)
+for(.x in seq_along(concerts_obo)){
+  .titles[[.x]] <- concerts_obo[[.x]]$title
+  .dates[[.x]] <- concerts_obo[[.x]][["showInfo"]][[1]][["time"]]
+  .locations[[.x]] <- concerts_obo[[.x]][["showInfo"]][[1]][["location"]]
+  .locationNames[[.x]] <- concerts_obo[[.x]][["showInfo"]][[1]][["locationName"]]
+}
+
+latestShow <- data.frame(
+  title=.titles,
+  date=.dates |> lubridate::ymd_hms(tz="Asia/Taipei"),
+  locationName=.locationNames,
+  location=.locations
+  )
+View(latestShow)
+```
+
+  * `if(pick5_1_4[[.x]]==T){` can be reduced to `if(pick5_1_4[[.x]]){` since `pick5_1_4[[.x]]` is already logical.
+  * When the same `iterate generation` happens several time, try to combine the .x-patterns. 
+   <https://github.com/AmyChen20021003/110-1-r4ds-main/blob/fdca3bce1bf5fbe8fdad6f52abe8ac7cc6ff3dd8/5-1.Rmd#L32>
+
+## Ex 5.2
+Regarding the `drug` data from Exercise 4.8. 
+```{r exercise5-2, echo=F}
+drug <- list()
+drug$source[[1]] <- 
+  "https://docs.google.com/spreadsheets/d/17ID43N3zeXqCvbUrc_MbpgE6dH7BjLm8BHv8DUcpZZ4/edit?usp=sharing"
+drug$data <- 
+  googlesheets4::read_sheet(
+    drug$source[[1]]
+  )
+```
+
+```{r, echo=F}
+drug$data |> View()
+.df <- drug$data
+names(.df) <- .df[1, ] |> unlist()
+.df <- .df[-1, ]
+names(.df)[5:7] |> teachDS::writeObject2Clip(T)
+.df[c('發生場所一','發生場所二','發生場所三')] |> unlist() |> table() |> View()
+.df$發生場所一 |> table() |> View()
+```
+
+  1. For each kind of drug (`毒品品項`), what was the average amount of drug (the mean of `數量（淨重）_克`) found?
+
+```{r, echo=F}
+.df <- drug$data
+
+# fixed column names
+names(.df) <- .df[1, ] |> unlist()
+.df <- .df[-1, ]
+
+.df$`數量（淨重）_克` |>
+  as.numeric() -> .df$`數量（淨重）_克`
+.df |> split(.df$毒品品項) -> grouped_dfs
+averageAmounts <- vector("double", length(grouped_dfs))
+for(.x in seq_along(grouped_dfs)){
+  averageAmounts[[.x]] <- 
+    mean(grouped_dfs[[.x]]$`數量（淨重）_克`, na.rm=T)
+}
+names(averageAmounts) <- names(grouped_dfs)
+View(averageAmounts)
+```
+
+  2. Add a column `date` to the data frame which is a date class created from the column `發生日期`
+
+```{r, echo=F}
+.df$date <- {
+  .df$發生日期 |>
+    as.integer() -> .minguoDates
+  lubridate::ymd(.minguoDates + 19110000)
+}
+```
+
+
+For the following question, we only consider those `毒品品項` that contains the words "安非他命".
+
+```{r, echo=FALSE}
+pick <- .df$毒品品項 |> stringr::str_detect("安非他命")
+subsample <- .df[pick, ]
+
+```
+
+  3. For each year, what was the total amount found? (Apply `lubridate::year()` to `date` column will get you year)
+
+```{r, echo=FALSE}
+subsample$date |> lubridate::year() -> years
+subsample |> split(years) -> subsample_byYear
+amount <- vector("double", length(subsample_byYear))
+for(.x in seq_along(subsample_byYear)){
+  amount[[.x]] <- sum(subsample_byYear[[.x]]$`數量（淨重）_克`, na.rm=T)
+}
+ans3 <- data.frame(
+  year=names(subsample_byYear),
+  amount=amount
+)
+View(ans3)
+```
+
+## Ex5.3
+
+ It is very common that economic model has some equilibrium condition as the intersection of two straight lines, like demand and supply. They can be expressed as:
+demand: p_d(q)=a+bq
+supply: p_s(q)=c+dq
+In equilibrium,
+```
+(p*, q*) satisfies p_d(q*)=p_s(q*) and p*=p_d(q*)=p_s(q*).
+```
+
+If you solve for $q*$ and $p*$,
+```
+q*=(a-c)/(d-b)
+p*=a+bq*.
+```
+1. Run the following code and solve for equilibrium and save it in a list with two element names q_star and p_star. Each has its value in corresponding to q* and p* that your program solved.
+```{r}
+a=1; b=-3; c=0; d=1
+```
+
+```{r, echo=FALSE}
+q_star <- (a-c)/(d-b)
+p_star <- a+b*q_star
+equilibrium <- list("q_star"=q_star, "p_star"=p_star)
+equilibrium
+```
+
+
+  * An error: 
+  
+```{r}
+a=1; b=-3; c=0; d=1
+# 1
+pick5_3_1=list(
+  q_star=(a-c)/(d-b), 
+  p_star=a+b*q_star
+)
+pick5_3_1
+```
+
+
+2. Create a function called solve_equilibrium so that the following code would work:
+```{r}
+a=1; b=-3; c=0; d=1
+equilibrium1 <- solve_equilibrium()
+print(equilibrium1)
+
+a=2; b=-3; c=0; d=1
+equilibrium2 <- solve_equilibrium()
+print(equilibrium2)
+
+a=1; b=-3; c=0; d=1.5
+equilibrium3 <- solve_equilibrium()
+print(equilibrium3)
+```
+
+```{r, echo=FALSE}
+solve_equilibrium <- function(){
+  q_star <- (a-c)/(d-b)
+  p_star <- a+b*q_star
+  equilibrium <- list("q_star"=q_star, "p_star"=p_star)
+  equilibrium
+}
+
+a=1; b=-3; c=0; d=1
+equilibrium1 <- solve_equilibrium()
+print(equilibrium1)
+
+a=2; b=-3; c=0; d=1
+equilibrium2 <- solve_equilibrium()
+print(equilibrium2)
+
+a=1; b=-3; c=0; d=1.5
+equilibrium3 <- solve_equilibrium()
+print(equilibrium3)
+```
+
+
