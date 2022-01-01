@@ -1,0 +1,122 @@
+## 5.4
+
+Import the `wdi` data from 4.8 Exercise-5 and obtain `iso2c_nonCountry` from Exercise 4.19
+
+```{r}
+wdi <- list()
+wdi$source[[1]] <- "https://databank.worldbank.org/source/world-development-indicators#"
+wdi$source[[2]] <- "https://docs.google.com/spreadsheets/d/1XHxjE3DIIdvNL-kbLR_bktxiHxmk23S6lUmn89WEedM/edit?usp=sharing"
+wdi$meta <- "https://docs.google.com/spreadsheets/d/1C8b-liC8Gl9Kmkexb5uq1_TUIE3lYOt4PutPlOne80g/edit?usp=sharing"
+wdi$data <- googlesheets4::read_sheet(
+  wdi$source[[2]]
+)
+```
+
+1. The following code remove any non country entry in the data. 
+
+```{r}
+data_set <- wdi$data 
+iso2c_nonCountry <- c('ZH','ZI','1A','S3','B8','V2','Z4','4E','T4','XC','Z7','7E','T7','EU','F1','XE','XD','XF','ZT','XH','XI','XG','V3','ZJ','XJ','T2','XL','XO','XM','XN','ZQ','XQ','T3','XP','XU','XY','OE','S4','S2','V4','V1','S1','8S','T5','ZG','ZF','T6','XT','1W')
+pick_countries <- !(data_set$iso2c %in% iso2c_nonCountry)
+data_set[pick_countries, ]
+```
+
+Use it to create a function `remove_nonCountries` so that any data frame, say `df_example` with `iso2c` in it can do the function call as the following to remove those non-country entries.
+```{r}
+df_example <- remove_nonCountries(data_set=df_example)
+```
+
+```{r remove_nonCountries, echo=FALSE}
+remove_nonCountries <- function(data_set) {
+  iso2c_nonCountry <- c('ZH','ZI','1A','S3','B8','V2','Z4','4E','T4','XC','Z7','7E','T7','EU','F1','XE','XD','XF','ZT','XH','XI','XG','V3','ZJ','XJ','T2','XL','XO','XM','XN','ZQ','XQ','T3','XP','XU','XY','OE','S4','S2','V4','V1','S1','8S','T5','ZG','ZF','T6','XT','1W')
+  pick_countries <- !(data_set$iso2c %in% iso2c_nonCountry)
+  data_set[pick_countries, ]
+}
+```
+
+2. The following code remove non countries from the data set and narrow down further to year 2020 data. Then summarise the indicator's mean, median, and range
+```{r}
+wdi$data |> remove_nonCountries() -> data_set
+
+data_set |> subset(year==2020) -> data_set2020 # it is the same as
+code = "SG.GEN.PARL.ZS"
+{
+  data_set2020[[code]] |> range(na.rm=T) -> output_range
+  data_set2020[[code]] |> mean(na.rm=T) -> output_mean
+  data_set2020[[code]] |> median(na.rm=T) -> output_median
+  list(
+    mean=output_mean,
+    median=output_median,
+    range=list(output_range)
+  ) |> list2DF()
+}
+```
+
+Construct a function `summarise_numerical` which can be used to produce a summary data frame of mean, median, and range for any given data set (as input argument `data_set`) and a numerical feature column name (as input argument `feature`). In other words, with the help of `summarise_numerical` function, the above code chunk can be replace with
+```{r}
+wdi$data |> remove_nonCountries() -> data_set
+
+data_set |> subset(year==2020) -> data_set2020 # it is the same as
+code = "SG.GEN.PARL.ZS"
+summarise_numerical(data_set=data_set2020, feature=code)
+```
+
+
+```{r summarise_numerical, echo=FALSE}
+summarise_numerical <- function(data_set, feature) {
+  data_set[[feature]] |> range(na.rm=T) -> output_range
+  data_set[[feature]] |> mean(na.rm=T) -> output_mean
+  data_set[[feature]] |> median(na.rm=T) -> output_median
+  list(
+    mean=output_mean,
+    median=output_median,
+    range=list(output_range)
+  ) |> list2DF()
+}
+  
+```
+
+3. Gender inequality is an important issue in social science. One possible indicator to compare this inequality across countries is:
+
+  * Proportion of seats held by women in national parliaments (%) (code name is "SG.GEN.PARL.ZS").
+  
+  What is the year range in the data set? For each year compute the mean of this indicator across countries. Is the trend of mean increasing over time?
+
+```{r echo=FALSE}
+wdi$data |> remove_nonCountries() -> data_set
+code = "SG.GEN.PARL.ZS"
+# range of year
+range(data_set$year, na.rm=T)
+
+data_set |> split(data_set$year) -> data_set_byYear
+# trend
+trend <- vector("numeric", length(data_set_byYear))
+for(.x in seq_along(data_set_byYear)){
+  #.x=2
+  data_set_byYear[[.x]][[code]] |> mean(na.rm=T) -> trend[[.x]]
+}
+names(trend) <-  names(data_set_byYear)
+
+View(trend)
+```
+
+4. Create a function `get_meanTrendOverYears` when do the following function call, it will return a vector of the mean of all countries' given code feature value over the years, with years as element names. (That is if mean is 2, 3, 8 for year 2010, 2011, 2012, then the returned vector should be the named numeric vector `c("2010"=2, "2011"=3, "2012"=8)`.)
+
+```{r}
+get_meanTrendOverYears(data_set=data_set, code="SG.GEN.PARL.ZS")
+```
+
+```{r get_meanTrendOverYears, echo=FALSE}
+get_meanTrendOverYears <- function(data_set, code) {
+  data_set |> split(data_set$year) -> data_set_byYear
+  # trend
+  trend <- vector("numeric", length(data_set_byYear))
+  for(.x in seq_along(data_set_byYear)){
+    #.x=2
+    data_set_byYear[[.x]][[code]] |> mean(na.rm=T) -> trend[[.x]]
+  }
+  names(trend) <-  names(data_set_byYear)
+  return(trend)
+}
+```
+
