@@ -1,0 +1,222 @@
+```{r}
+econSurvey <- list()
+econSurvey$source[[1]] <- "https://docs.google.com/spreadsheets/d/1TtpiYpq_HjAHH3MJS20mZR3hb0oXDNCr6ybqmNjFFb8/edit?usp=sharing"
+econSurvey$data <- googlesheets4::read_sheet(
+  econSurvey$source[[1]]
+)
+data<-data.frame(econSurvey$data)
+```
+課業學習:選課
+分別選出經濟系必修、經濟系選修、通識的回答做比較
+
+
+#選課資料參考來源
+##經濟系必修
+```{r}
+unlisted_considerations <- {
+  econSurvey[["data"]][["1 針對不同課程類別，您選課資訊參考來源為 [經濟系必修]"]]|> 
+    stringr::str_split(", ") -> list_consideration
+  
+  unlist(list_consideration)
+}
+table(unlisted_considerations)
+```
+
+##經濟系選修
+```{r}
+unlisted_considerations2 <- {
+  econSurvey[["data"]][["1 針對不同課程類別，您選課資訊參考來源為 [經濟系選修]"]]|> 
+    stringr::str_split(", ") -> list_consideration2
+  
+  unlist(list_consideration2)
+}
+table(unlisted_considerations2)
+```
+
+##通識 
+```{r}
+unlisted_considerations3 <- {
+  econSurvey[["data"]][["1 針對不同課程類別，您選課資訊參考來源為 [通識]"]]|> 
+    stringr::str_split(", ") -> list_consideration3
+  
+  unlist(list_consideration3)
+}
+table(unlisted_considerations3)
+```
+
+
+#選課動機
+##經濟系必修
+```{r}
+unlisted_motivations <- {
+  econSurvey[["data"]][["2 針對各類課程，您修課動機及考量為 [經濟系必修]"]] |> 
+    stringr::str_split(", ") -> list_motivation
+  
+  unlist(list_motivation)
+}
+table(unlisted_motivations)
+```
+
+##經濟系選修
+```{r}
+unlisted_motivations2 <- {
+  econSurvey[["data"]][["2 針對各類課程，您修課動機及考量為 [經濟系選修]"]] |> 
+    stringr::str_split(", ") -> list_motivation2
+  
+  unlist(list_motivation2)
+}
+table(unlisted_motivations2)
+```
+
+##通識
+```{r}
+unlisted_motivations3 <- {
+  econSurvey[["data"]][["2 針對各類課程，您修課動機及考量為 [通識]"]] |> 
+    stringr::str_split(", ") -> list_motivation3
+  
+  unlist(list_motivation3)
+}
+table(unlisted_motivations3)
+```
+
+
+#選課滿意度
+##經濟系必修
+```{r}
+table(econSurvey[["data"]][["3 整體而言，針對本學期（110-1），你對以下各類課程選課狀況感到 [經濟系必修]"]])
+```
+
+##經濟系選修
+```{r}
+table(econSurvey[["data"]][["3 整體而言，針對本學期（110-1），你對以下各類課程選課狀況感到 [經濟系選修]"]])
+```
+
+##通識
+```{r}
+table(econSurvey[["data"]][["3 整體而言，針對本學期（110-1），你對以下各類課程選課狀況感到 [通識]"]])
+```
+
+##學生對於整體選課輔導上建議學校提供
+```{r}
+na.omit(econSurvey[["data"]][["4 在【選】課輔導上，建議學校還可以提供什麼？"]])
+
+```
+
+
+
+課程學習:輔助資源
+#課程學習輔助資源對學生的助益
+以老師的Office Hours、數位學苑平台、職涯講座及參訪活動做比較
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["1 對於以下課程學習輔助資源，請依其對「選課」、「課業學習」及「學習興趣探索」三面向勾選出對你有助益的資源： [老師的Office Hours]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["1 對於以下課程學習輔助資源，請依其對「選課」、「課業學習」及「學習興趣探索」三面向勾選出對你有助益的資源： [數位學苑平台]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["1 對於以下課程學習輔助資源，請依其對「選課」、「課業學習」及「學習興趣探索」三面向勾選出對你有助益的資源： [職涯講座及參訪活動]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+
+
+#是否知道資源存在
+以課程教學助理（TA）、數位學苑平台與DVD公播光碟及Kindle閱讀器、電腦軟體及專業教室(社科2F12)、多媒體錄製設備（GoPro, iMac等）做比較
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["2 對於以下課程學習輔助資源，你是否有聽過。若有聽過，各項資源對你課業學習幫助的滿意度如何？ [課程教學助理（TA）]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["2 對於以下課程學習輔助資源，你是否有聽過。若有聽過，各項資源對你課業學習幫助的滿意度如何？ [數位學苑平台]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["2 對於以下課程學習輔助資源，你是否有聽過。若有聽過，各項資源對你課業學習幫助的滿意度如何？ [DVD公播光碟及Kindle閱讀器]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["2 對於以下課程學習輔助資源，你是否有聽過。若有聽過，各項資源對你課業學習幫助的滿意度如何？ [電腦軟體及專業教室(社科2F12)]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["2 對於以下課程學習輔助資源，你是否有聽過。若有聽過，各項資源對你課業學習幫助的滿意度如何？ [多媒體錄製設備（GoPro, iMac等）]"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+
+
+#整體而言對系上提供資源滿意程度
+```{r}
+unlisted_knowing <- {
+  econSurvey[["data"]][["3 整體而言你對系上提供的課業學習輔助資源"]]|> 
+    stringr::str_split(", ") -> list_knowing
+  
+  unlist(list_knowing)
+}
+table(unlisted_knowing)
+```
+
+
+
+整體評價
+#對於本系整體評價
+```{r}
+table(econSurvey[["data"]][["1 整體而言你對本系師資感到"]])
+
+table(econSurvey[["data"]][["2 整體而言你對本系課程設計感到"]])
+
+table(econSurvey[["data"]][["3 整體而言你對本系學習資源感到"]])
+```
+

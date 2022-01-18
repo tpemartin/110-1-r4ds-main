@@ -1,0 +1,350 @@
+---
+title: "Final Project_Team 8"
+author: "Team 8"
+date: "1/15/2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## import Library & Data
+
+```{r, message=FALSE}
+library(readr)
+library(expss)
+library(dplyr)
+library(ggplot2)
+
+survey <- list()
+survey$source[[1]] <- 
+  "https://github.com/PEIZHIHE/110-1-r4ds-main/blob/147f189ece0ae4ca676905d605111cf3f7fa2002/dataset.csv?raw=true"
+survey$data <- 
+  readr::read_csv(
+    survey$source[[1]]
+  ) |> suppressMessages()
+
+source("/Users/peizhi/Documents/OneDrive/final project/support/Team 8 support.R")
+```
+
+-   資料來源
+
+```{r}
+browseURL("https://srda.sinica.edu.tw/datasearch_detail.php?id=2973")
+```
+
+-   樣本數
+
+```{r}
+project <- list()
+# remove the first column
+survey$data <- survey$data[,-1]
+# the data has this many observations (1,961 obs)
+project$obs_number <- survey$data |> nrow()
+project$obs_number
+survey$data |> View()
+```
+
+-   資料涵蓋範圍：
+
+```{r}
+# it covers "2018-07-29" to "2019-01-14"
+{
+  .dates <- paste(
+                    survey$data$year_m + 1911, 
+                    survey$data$sdt1 %/% 100, 
+                    survey$data$sdt1 %% 100, 
+                    sep="-"
+                  )
+  survey$data$surv_dates <- lubridate::ymd(.dates)
+  survey$data$surv_dates |> range() -> project$data_range
+}
+
+project$data_range
+```
+
+```{r}
+survey$data$surv_month <- survey$data$surv_dates |> lubridate::month()
+table(survey$data$surv_month)
+
+#create a factor column called `發現季節` with levels, "spring", "summer", "fall" and "winter. They cover months 6-8 (for 'summer'), 9-11 (for 'fall'), and 12-1 (for 'winter')
+
+survey$data$surv_season <- survey$data$surv_month |> factor()
+season_recode <- c('1'=4,'7'=2,'8'=2,'9'=3,'10'=3,'11'=3,'12'=4)
+survey$data$surv_season <- season_recode[survey$data$surv_season] |> factor()
+levels(survey$data$surv_season) <- c('summer', 'fall', 'winter')
+table(survey$data$surv_season)
+```
+
+-   本份問券僅包含2018夏至2019冬季為止資料。
+
+
+接下來我們想要提出以下的問題:
+
+-   哪些族群對歐式料理的喜好度較高?
+
+-   這些族群偏好歐式料理可能因素為何?
+
+
+### 歐式料理喜好度 (c3e)
+
+```{r}
+c3e_recode <- c('1'=1,'2'=1,'3'=0,'4'=0,'97'=NA)
+survey$data$c3e_gc<-c3e_recode[survey$data$c3e] %>% factor()
+levels(survey$data$c3e_gc) <- c("dislike","like")
+table(survey$data$c3e_gc)
+survey$data = apply_labels(survey$data,c3e_gc = "European food preference")
+```
+
+```{r}
+cross_cases(survey$data, c3e_gc, surv_season)
+```
+
+```{r}
+cross_cpct(survey$data, c3e_gc, list(total(), surv_season))
+```
+
+-   初步看來，季節與人們對歐式食物偏好度的關聯性不大。
+
+
+## clean data
+
+-   進行分析之前，我們再度對一些有興趣的項目進行資料整理、重新歸類排序.
+
+### 性別 (a1)
+
+```{r}
+survey$data$a1 <- factor(survey$data$a1)
+levels(survey$data$a1) <- c("Male", "Female")
+table(survey$data$a1)
+```
+
+### 外語閱讀能力, 升序 (b23a)
+
+```{r}
+b23a_recode <- c('1'=7,'2'=6,'3'=5,'4'=4,'5'=3,'6'=2,'7'=1,'98'=NA)
+survey$data$b23a_idx <- b23a_recode[survey$data$b23a] %>% factor()
+table(survey$data$b23a_idx)
+```
+
+### 國際議題關注度, 升序 (b10)
+
+```{r}
+b10_recode <- c('1'=7,'2'=6,'3'=5,'4'=4,'5'=3,'6'=2,'7'=1,'92'=NA,'94'=NA)
+survey$data$b10_idx <- b10_recode[survey$data$b10] %>% factor()
+table(survey$data$b10_idx)
+```
+
+```{r}
+survey$data = apply_labels(survey$data,
+                           a1 = "gender",
+                           b23a_idx = "reading ability",
+                           b10_idx = "international issues"
+                          )
+```
+
+```{r}
+cross_cpct(survey$data, c3e_gc, list(total(), b23a_idx))
+```
+
+```{r}
+cross_cpct(survey$data, c3e_gc, list(total(), b10_idx))
+```
+
+
+```{r, fig.cap=c("Fig. 1 Relationship of taste and each index"), warning=FALSE}
+plot1 <- ggplot(survey$data,
+               aes(x = b23a_idx,
+                   fill = c3e_gc)) +
+  geom_bar(position = position_fill(),alpha = .7) +
+  scale_x_discrete(name = 'reading ability (b23a)',
+                   breaks = seq(0, 7, 1), na.translate = FALSE)+
+  scale_fill_brewer(breaks=c("dislike","like"),
+                    labels = c("dislike","like"),
+                    palette ="Blues") +
+  theme_light()+
+  labs(y = "proportion",fill = 'taste')
+
+
+plot2 <- ggplot(survey$data,
+               aes(x = b10_idx,
+                   fill = c3e_gc)) +
+  geom_bar(position = position_fill(),alpha = .7) +
+  scale_x_discrete(name = 'international issues (b10)',
+                   breaks = seq(0, 7, 1), na.translate = FALSE)+
+  scale_fill_brewer(breaks=c("dislike","like"),
+                    labels = c("dislike","like"),
+                    palette ="Blues") + 
+  theme_light()+
+  labs(y = "proportion",fill = 'taste')
+
+
+multiplot(plot1, plot2, cols=2)
+```
+
+
+-   從表格與視覺化後的圖形看來，我們可初步推論外文閱讀能力佳和對國際議題關注程度較高的族群比較喜歡歐式料理。
+或許是因為他們能夠因此與國外產生較強連結，獲得滿足（utility）。
+
+
+
+## 那麼社經地位較高的人會不會比較喜歡歐式料理？
+
+-   這裡我們將教育及職業欄位做處理、排序，並根據社經地位雙因子理論產生的社經地位指標與歐式食物偏好嘗試做連結解釋。
+
+### Education index, 教育因子 (a11)
+
+-   降序，指數越高教育程度越低。
+
+```{r}
+edu_idx_recode <- c('1'=5,'2'=4,'3'=4,'4'=3,'5'=3,'6'=3,'7'=3,'8'=3,'9'=3,'10'=2,
+                    '11'=2,'12'=2,'13'=2,'14'=2,'15'=2,'16'=2,'17'=2,'18'=2,
+                    '19'=2,'20'=1,'21'=1,'22'=NA)
+survey$data$edu_idx <- edu_idx_recode[survey$data$a11]
+survey$data$edu_idx2 <- survey$data$edu_idx
+table(survey$data$edu_idx2)
+```
+
+### Occupation index, 職業因子 (h5)
+
+-   降序，指數越高職業等級越低。
+
+```{r}
+occ_idx_recode <- c('1'=3,'2'=4,'3'=5,'4'=5,'5'=3,'6'=1,'7'=2,'96'=NA,'97'=NA,'98'=NA)
+survey$data$occ_idx <- occ_idx_recode[survey$data$h5]
+table(survey$data$occ_idx)
+```
+
+### Socioeconomic status index,社經地位 ascending order (SES_idx)
+
+-   這裡採用何林赫(A.B. Hollingshead)的雙因子社會地位指數(Two Factor Index of Social Position)，依「職業」和「教育」將個人的社經地位畫分成五個等級。
+
+-   國人提及社經地位時，多參照我國實況將雙因子社會地位指數酌予修改，把「職業」與 「教育」加權合併，其中依前者的高低指數乘以七，加上後者乘以四所得之數，作為社經 地位指數，再據以分成五個等級。
+
+-   降序，指數越高社經地位越低。
+
+-   資料來源
+
+```{r}
+browseURL("https://terms.naer.edu.tw/detail/1306810/")
+browseURL("https://nccur.lib.nccu.edu.tw/bitstream/140.119/49772/11/701011.pdf")
+```
+
+-   這裡為了易於判讀，調整為昇序，意即指數越低社經地位越高方向。
+
+```{r}
+survey$data$SES_idx <- survey$data$edu_idx * 4 + survey$data$occ_idx * 7
+
+survey$data$SES_idx2 <- recode(survey$data$SES_idx,'11'=5,'15'=5,'18'=5,'19'=4,'22'=4,
+                          '23'=4,'25'=4,'26'=4,'27'=4,'29'=4,'30'=3,'32'=3,
+                          '33'=3,'34'=3,'36'=3,'37'=3,'39'=3,'40'=3,'41'=2,
+                          '43'=2,'44'=2,'47'=2,'48'=2,'51'=2,'55'=1)
+table(survey$data$SES_idx2)
+survey$data$SES_idx3 <- factor(survey$data$SES_idx2)
+```
+
+```{r}
+survey$data = apply_labels(survey$data,
+                           edu_idx = "education",
+                           occ_idx = "occupation",
+                           SES_idx3 = "SES"
+                          )
+```
+
+```{r}
+cross_cpct(survey$data, c3e_gc, list(total(), edu_idx))
+```
+
+-   這裡可以觀察出來，與先前教育程度較高可能比較喜歡歐式料理推論一致。
+
+```{r}
+cross_cpct(survey$data, c3e_gc, list(total(), occ_idx))
+```
+
+-   職業部分就比較沒有明顯的區別。
+
+
+```{r}
+cross_cpct(survey$data, c3e_gc, list(total(), SES_idx3))
+```
+
+-   社經地位部分，除了低社經地位族群有絕對性厭惡歐式料理的傾向，其他族群對歐式料理的偏好度緩緩上升至中高社經地位實為最高點，
+之後在高社經地位時再度下降。
+
+
+```{r, fig.cap=c("Fig. 2 Relationship of taste and Socioeconomic status index"), warning=FALSE}
+
+
+plot3 <- ggplot(survey$data,
+                aes(x = edu_idx,
+                    fill = c3e_gc)) +
+  geom_bar(position = position_fill(),alpha = .7) +
+  scale_x_continuous(name = 'Education index',
+                     breaks = seq(0, 5, 1))+
+  scale_fill_brewer(breaks=c("dislike","like"),
+                    labels = c('disike','like')) +
+  theme_light()+
+  labs(y = "proportion",fill = 'taste')
+
+
+
+plot4 <- ggplot(survey$data,
+                aes(x = occ_idx,
+                    fill = c3e_gc)) +
+  geom_bar(position = position_fill(),alpha = .7) +
+  scale_x_continuous(name = 'Occupation index',
+                     breaks = seq(0, 5, 1))+
+  scale_fill_brewer(breaks=c("dislike","like"),
+                    labels = c('disike','like')) +
+  theme_light()+
+  labs(y = "proportion",fill = 'taste')
+
+
+
+plot5 <- ggplot(survey$data,
+                aes(x = SES_idx2,
+                    fill = c3e_gc)) +
+  geom_bar(position = position_fill(),alpha = .7) +
+  scale_x_continuous(name = 'Socioeconomic status index',
+                     breaks = seq(0, 5, 1))+
+  scale_fill_brewer(breaks=c("dislike","like"),
+                    labels = c('disike','like')) + 
+  theme_light()+
+  labs(y = "proportion",fill = 'taste')
+
+
+plot6 <- ggplot(survey$data,
+                aes(x = SES_idx2,
+                    fill = c3e_gc)) +
+  geom_bar(position = position_fill(),alpha = .7) +
+  scale_x_continuous(name = 'Socioeconomic status index, divided by gender',
+                     breaks = seq(0, 5, 1))+
+  scale_fill_brewer(breaks=c("dislike","like"),
+                    labels = c('disike','like')) +
+  facet_wrap(~a1, ncol=0)+ 
+  theme_light()+
+  labs(y = "proportion",fill = 'taste')
+
+multiplot(plot3, plot5, plot4, plot6, cols=2)
+
+```
+
+
+-   與教育程度指標不同，社經地位對歐式食物偏好度的影響不如預期明顯 (Why?)
+
+    -   除了職業因素較複雜之外，我們另外還注意到了用性別區分的社經地位指數在男性中社經地位與女性中高社經地位分別有異常低落與突出的現象。
+
+
+## 結論
+
+-   從上述結論，透過了解教育程度和外文閱讀能力和關心國際議題程度，這三者間的相關性，而能進一步證明， 因為教育程度較高的人，有良好外文閱讀能力等等，進而回推證明教育程度和歐式料理偏好度具正相關。
+
+-   要進一步了解中社經地位男性與中高社經地位女性偏好表現互異的原因，或許要回歸到社會層面做探討。
+人口結構、教育層面，男女家庭責任與社會期待不同等因素，這就有待將來再做更深入的研究。

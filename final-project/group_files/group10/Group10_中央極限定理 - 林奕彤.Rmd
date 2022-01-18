@@ -1,0 +1,125 @@
+---
+title: "Group 10 中央極限定理"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+##首先我們下載資料
+```{r}
+load("Census_2000.RDATA")
+pop<-Census.2000$A020 #年齡
+summary(pop)
+hist(pop,breaks=min(pop):max(pop), border = "forest green", main ="Population Distribution of Age") #第1個圖
+mu<-mean(pop)
+sigma<-sd(pop)
+```
+
+
+```{r}
+set.seed(12345) #設定抽樣種子
+N<-200
+a<-sample(pop,N,T) #取兩百個樣本數,T表示可以重複取樣
+xbar<-mean(sample(a,N,T)) #把這兩百個sample取平均值存在xbar裡
+xbar
+```
+
+
+#重複抽一千次
+```{r}
+draws<-1000 
+xbars<-vector(length = 1000)   #xbars現在是長度1000的vector
+for(i in 1:draws){    #for迴圈#drwas=1000 #i=1一直到1000
+  xbars[i]<-mean(sample(pop,N,T)) 
+} #隨便取200個年齡的值,取平均,存放在xbars裡,作1000次
+xbars  #所以現在xbars裡面有1000個年齡平均值
+hist(xbars,breaks =200,border = "dark gray",freq = F) #hist是把它做成樹狀圖#圖二
+```
+
+
+```{r}
+par(mfrow=c(2,2)) #建立一個2X2的畫布,可以四個圖放在一起
+```
+
+-   總共10萬列,每列有30個資料,總共有10萬個平均
+```{r}
+draws=100000 #10萬
+N<-30
+matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws)
+#(資料屬性,幾條直行,幾條橫列) #存成size=10萬x30的矩陣
+xbars<-rowMeans(matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws)) #rowmeans代表取列的資料的平均,總共10萬列,每列有30個資料,總共有10萬個平均
+xbars #10萬個資料全部存在xbars 
+hist(xbars,breaks = 200,freq=F,xlim = c(20,45))
+```
+
+
+-   接下來的操作也都一樣,只是我們取不同的樣本數,分別是200,360,1200,
+```{r}
+N<-200
+matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws)
+xbars<-rowMeans(matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws))
+xbars
+hist(xbars,breaks = 200,freq=F,xlim = c(20,45))
+```
+
+
+```{r}
+N<-360
+matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws)
+xbars<-rowMeans(matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws))
+xbars
+hist(xbars,breaks = 200,freq=F,xlim = c(20,45))
+```
+
+
+
+```{r}
+N<-1200
+matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws)
+xbars<-rowMeans(matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws))
+xbars
+hist(xbars,breaks = 200,freq=F,xlim = c(20,45))
+```
+
+
+-   當樣本數越來越大,離散值變得越來越小,也更接近平均值
+```{r}
+par(mfrow=c(1,1)) 
+N<-300 
+matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws)
+xbars<-rowMeans(matrix(data=sample(pop,size=draws*N,replace=T),ncol=N,nrow =draws))
+xbars
+hist(xbars,breaks = 200,freq=F)
+```
+
+-  標示
+```{r}
+abline(v=mu,lty=1,lwd=1,col="red") #畫圖設定 #v=vertical 
+abline(v=mean(xbars),lty=2,lwd=2,col="blue")#lty=type of line,1=實線,2=虛線#
+x<-seq(from=28,to=38,by=.1) #從28到38的等差數列,等差為0.1 
+lines(x=x,y=dnorm(x=x,mean=mu,sd=sigma/sqrt(N)),lwd=2,col="orange")#畫橘黃色的曲線#dnorm是常態分佈#squrt(N)=N的平方根#
+```
+
+
+-   檢查樣本和母體平均數
+```{r}
+mean(xbars)#十萬個樣本平均數的平均
+mu#母體平均數
+##母體平均數近似於樣本平均數,此即中央極限定理
+```
+
+
+-   結論
+
+中央極限定理是統計學一定會教到的重要概念且常用到的結果，然而我們大部分的時候僅能依靠已經知道的觀念去理解中央極限定理，我們只知道當樣本數越大，尤其接近無限大時，將越接近常態分配，離散也會隨之縮小，還有樣本平均數抽樣分布之平均數會等於母體平均數。
+
+這些結論難以憑藉人工運算去證明，因此藉由R Studio的運算來證明中央極限定理的真實性。
+

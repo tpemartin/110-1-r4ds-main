@@ -1,0 +1,225 @@
+---
+title: "板橋區不動產分析"
+author: "Vincent"
+date: "2022/1/4"
+output: html_document
+---
+
+```{r}
+house = list()
+
+house_estimate_106 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/1D96BA92-BBE7-403A-A6E5-1BCEA36754FB/json?page=0&size=500") 
+house$estimate[[1]] = house_estimate_106
+
+
+house_estimate_107 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/7926F038-26F0-4F9C-A85B-4780133D8D11/json?page=0&size=500")
+house$estimate[[2]] = house_estimate_107
+
+house_estimate_108 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/AC3D3889-4718-404F-AB66-90AC774BEDAE/json?page=0&size=500")
+house$estimate[[3]] = house_estimate_108 
+
+
+
+house_realvalue_101 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/662F54A2-53A5-4406-B684-348AC9154511/json?page=0&size=500")
+house$realvalue[[1]] = house_realvalue_101 
+
+house_realvalue_102 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/D8C26128-E269-4045-82F6-7B31FBEC2E45/json?page=0&size=500")
+house$realvalue[[2]] = house_realvalue_102
+
+house_realvalue_103 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/7C047A07-AE8D-4D1E-B834-8C12756F66EB/json?page=0&size=500")
+house$realvalue[[3]] = house_realvalue_103
+
+house_realvalue_104 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/4AE85CF8-60E6-42C5-A6BF-2C902CCA6655/json?page=0&size=500")
+house$realvalue[[4]] = house_realvalue_104 
+
+house_realvalue_105 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/68FDFC2E-A9A9-4A0C-87A7-625975EE0F62/json?page=0&size=500")
+house$realvalue[[5]] = house_realvalue_105 
+
+house_realvalue_106 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/EA6FC722-F7A1-4866-8E72-1C6CB6083068/json?page=0&size=500")
+house$realvalue[[6]] = house_realvalue_106 
+
+house_realvalue_107 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/55B11A71-50BC-454F-94EC-31BD5353F2EB/json?page=0&size=500")
+house$realvalue[[7]] = house_realvalue_107 
+
+house_realvalue_108 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/A256CE54-C830-4AB0-84F4-62E8BEAD0802/json?page=0&size=500")
+house$realvalue[[8]] = house_realvalue_108 
+
+house_realvalue_109 = jsonlite::fromJSON("https://data.ntpc.gov.tw/api/datasets/4F5EEBB5-287D-47BD-8104-C9FA3655F21A/json?page=0&size=500")
+house$realvalue[[9]] = house_realvalue_109 
+```
+
+
+```{r}
+data.frame(house_realvalue_109)
+isban<-house_realvalue_109[c(1)][[1]]=='板橋區'
+ban109<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_109[c(23)][[1]]->ban109$realvalue
+  }}
+average_109_realvalue = mean(as.numeric(ban109$realvalue),na.rm = TRUE)
+
+```
+```{r}
+data.frame(house_realvalue_108)
+isban<-house_realvalue_108[c(1)][[1]]=='板橋區'
+ban108<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_108[c(23)][[1]]->ban108$realvalue
+  }}
+average_108_realvalue =
+mean(as.numeric(ban108$realvalue),na.rm = TRUE)
+
+```
+
+```{r}
+data.frame(house_realvalue_107)
+isban<-house_realvalue_107[c(1)][[1]]=='板橋區'
+ban107<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_107[c(23)][[1]]->ban107$realvalue
+  }}
+average_107_realvalue =
+mean(as.numeric(ban107$realvalue),na.rm = TRUE)
+```
+```{r}
+data.frame(house_realvalue_106)
+isban<-house_realvalue_106[c(1)][[1]]=='板橋區'
+ban106<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_106[c(23)][[1]]->ban106$realvalue
+  }}
+average_106_realvalue =
+mean(as.numeric(ban106$realvalue),na.rm = TRUE)
+```
+
+
+```{r}
+data.frame(house_realvalue_105)
+isban<-house_realvalue_105[c(1)][[1]]=='板橋區'
+ban105<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_105[c(23)][[1]]->ban105$realvalue
+  }}
+average_105_realvalue =
+mean(as.numeric(ban105$realvalue),na.rm = TRUE)
+```
+
+```{r}
+data.frame(house_realvalue_104)
+isban<-house_realvalue_104[c(1)][[1]]=='板橋區'
+ban104<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_104[c(23)][[1]]->ban104$realvalue
+  }}
+average_104_realvalue =
+mean(as.numeric(ban104$realvalue),na.rm = TRUE)
+```
+
+```{r}
+data.frame(house_realvalue_103)
+isban<-house_realvalue_103[c(1)][[1]]=='板橋區'
+ban103<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_103[c(23)][[1]]->ban103$realvalue
+  }}
+average_103_realvalue =
+mean(as.numeric(ban103$realvalue),na.rm = TRUE)
+```
+
+```{r}
+data.frame(house_realvalue_102)
+isban<-house_realvalue_102[c(1)][[1]]=='板橋區'
+ban102<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_102[c(23)][[1]]->ban102$realvalue
+  }}
+average_102_realvalue =
+mean(as.numeric(ban102$realvalue),na.rm = TRUE)
+```
+
+
+```{r}
+data.frame(house_realvalue_101)
+isban<-house_realvalue_101[c(1)][[1]]=='板橋區'
+ban101<-list()
+for(i in c(1:500)){
+  if(isban[[i]]==TRUE){
+    house_realvalue_101[c(23)][[1]]->ban101$realvalue
+  }}
+average_101_realvalue =
+mean(as.numeric(ban101$realvalue),na.rm = TRUE)
+```
+```{r}
+average = list()
+average$realvalue[[8]] <- average_109_realvalue 
+average$realvalue[[7]] <- average_108_realvalue 
+average$realvalue[[6]] <- average_107_realvalue 
+average$realvalue[[5]] <- average_106_realvalue 
+average$realvalue[[4]] <- average_105_realvalue 
+average$realvalue[[3]] <- average_104_realvalue 
+average$realvalue[[2]] <- average_103_realvalue 
+average$realvalue[[1]] <- average_102_realvalue 
+```
+
+```{r}
+data.frame(house_estimate_106)
+average_106_estimate = 
+mean(as.numeric(house_estimate_106[[c(5)]]),na.rm = TRUE)
+average$estimate[[1]] =
+average_106_estimate
+```
+
+```{r}
+data.frame(house_estimate_107)
+average_107_estimate = 
+mean(as.numeric(house_estimate_107[[c(5)]]),na.rm = TRUE)
+average$estimate[[2]] =
+average_107_estimate
+```
+
+```{r}
+data.frame(house_estimate_108)
+average_108_estimate = 
+mean(as.numeric(house_estimate_108[[c(5)]]),na.rm = TRUE)
+average$estimate[[3]] =
+average_108_estimate
+```
+
+```{r}
+average$estimate
+```
+
+
+
+```{r}
+average$realvalue
+
+```
+
+
+
+
+```{r}
+library(ggplot2)
+library(gcookbook)
+year = c(102 ,103 ,104,105,106,107,108,109)
+price = unlist(average$realvalue)
+price = price / 10000
+graph = data.frame(
+  year,
+  price
+)
+ggplot(graph, aes(x = year , y = price)) + geom_line() + geom_point() 
+```
+
+
+
+

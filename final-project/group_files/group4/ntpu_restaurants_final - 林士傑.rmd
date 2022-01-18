@@ -1,0 +1,173 @@
+```{r}
+ntpu_restaurants_fbf <- jsonlite::fromJSON("C:/Users/user/Desktop/RRR/learning~R/learning R class/final/ntpu_restaurants.json", simplifyDataFrame = T)
+ntpu_restaurants_obo <- jsonlite::fromJSON("C:/Users/user/Desktop/RRR/learning~R/learning R class/final/ntpu_restaurants.json", simplifyDataFrame = F)
+```
+
+```{r}
+View(ntpu_restaurants_fbf)
+
+length(ntpu_restaurants_fbf$name)
+
+```
+
+1)營業狀態 2)物價水平 3)評論星數 4)道路搜尋 5)評論總數
+
+1)營業狀態
+
+```{r business_status}
+businessStatus <- function(){
+  cal <- list()
+  rstudioapi::showPrompt('', message="Operational or not.\n(T or F)") -> status
+if(status){
+statusCheck <- ntpu_restaurants_fbf |>
+  subset(business_status == "OPERATIONAL")
+} else{
+statusCheck <- ntpu_restaurants_fbf |>  subset(business_status == "CLOSED_TEMPORARILY")
+}
+
+cal$total <- length(statusCheck$name)
+cal$percentage <- round(cal$total/60*100, 2)
+
+View(statusCheck$name)
+cal
+}
+businessStatus()
+```
+
+2)物價水平
+
+```{r price_level}
+range(ntpu_restaurants_fbf$price_level)
+
+priceLevel <- function(){
+  cal <- list()
+  rstudioapi::showPrompt('', message="Input the price level value you want.\n(1 or 2)") -> price
+
+priceLevel <- c()
+priceLevel <- 
+  ntpu_restaurants_fbf |> subset(price_level==price)
+
+cal$total <- length(priceLevel$name)
+cal$percentage <- round(cal$total/60*100, 2)
+
+View(priceLevel$name)
+cal
+}
+priceLevel()
+```
+
+3)評論星數
+
+```{r rating}
+range(ntpu_restaurants_fbf$rating)
+
+rating <- function(){
+  cal <- list()
+  rstudioapi::showPrompt('', message="Input the lowest rating value you want.") -> value
+
+rating_higherThanOrEqualToValue <- ntpu_restaurants_fbf[which(as.numeric(ntpu_restaurants_fbf$rating) >= as.numeric(value)), c("name", "rating")]
+
+print(glue::glue("The following are those restaurants whose rating are higher than or equal to {value}."))
+
+for (.x in seq_along(rating_higherThanOrEqualToValue$name)) {
+  print(rating_higherThanOrEqualToValue$name[[.x]])
+  print(rating_higherThanOrEqualToValue$rating[[.x]])
+}
+
+cal$total <- length(rating_higherThanOrEqualToValue$name)
+cal$percentage <- round(cal$total/60*100, 2)
+
+View(rating_higherThanOrEqualToValue)
+cal
+}
+rating()
+```
+
+4)道路搜尋
+
+```{r road}
+vicinity <- function(){
+  roadName <- list(c("Dade Road", "大德路"), c("Daguan Road", "大觀路"), c("Daxue Road", "大學路"), c("Dayi Road", "大義路"), c("Guoji 1st Street", "ˇ國際一街"), c("Guoji 2nd Street", "國際二街"), c("Guoxue Street", "國學街"), c("Xuefu Road", "學府路"), c("Xueqin Road", "學勤路"))
+restaurantOnRoad <- list()
+restaurantOnRoadDetail <- list()
+cal <- list()
+
+rstudioapi::showPrompt('', message="Input the road you want to go to.\n(using english)") -> destination
+rstudioapi::showPrompt('', message="Detail?\n(T or F)") -> showDetail
+
+for(.x in seq_along(roadName)){
+  if(destination == roadName[[.x]][[1]]){
+    destination == roadName[[.x]][[1]]
+    pick1 <- ntpu_restaurants_fbf$vicinity |> stringr::str_detect(roadName[[.x]][[1]])
+    pick2 <- ntpu_restaurants_fbf$vicinity |> stringr::str_detect(roadName[[.x]][[2]])
+    restaurantOnRoad[[destination]] <- ntpu_restaurants_fbf[pick1 | pick2, c("name", "rating", "vicinity")]
+    restaurantOnRoadDetail[[destination]] <- ntpu_restaurants_fbf[pick1 | pick2, ]
+  }
+}
+
+if(showDetail){
+  View(restaurantOnRoadDetail[[destination]])
+} else{
+  View(restaurantOnRoad[[destination]])
+}
+
+cal$total <- length(restaurantOnRoad[[1]]$name)
+cal$percentage <- round(cal$total/60*100, 2)
+
+cal
+}
+vicinity()
+```
+
+5)評論總數
+
+```{r}
+ratingsTotal <- function(){
+  cal <- list()
+  rstudioapi::showPrompt('', message="Input the lowest ratings total value you want.") -> totalValue
+
+ratingTotal_higherThanOrEqualToValue <- ntpu_restaurants_fbf[which(
+  as.numeric(ntpu_restaurants_fbf$user_ratings_total) >= as.numeric(totalValue)), c("name", "user_ratings_total")]
+
+print(glue::glue(
+  "The following are those restaurants whose rating total value are higher than or equal to {totalValue}.")
+  )
+
+for (.x in seq_along(ratingTotal_higherThanOrEqualToValue$name)) {
+  print(ratingTotal_higherThanOrEqualToValue$name[[.x]])
+  print(ratingTotal_higherThanOrEqualToValue$user_ratings_total[[.x]])
+}
+
+cal$total <- length(
+  ratingTotal_higherThanOrEqualToValue$name)
+cal$percentage <- round(cal$total/60*100, 2)
+
+View(ratingTotal_higherThanOrEqualToValue)
+cal
+}
+ratingsTotal()
+```
+
+評論總數分級
+
+```{r}
+ntpu_restaurants_fbf$user_ratings_total <- 
+  as.numeric(ntpu_restaurants_fbf$user_ratings_total)
+
+
+
+ntpuMaximalValues <- c(0, 500, 1000, 1500, 2000, 2500)
+
+ntpu_ratingTotal <- cut(
+  ntpu_restaurants_fbf$user_ratings_total, 
+  ntpuMaximalValues,
+  include.lowest = TRUE
+  )
+
+View(table(ntpu_ratingTotal, useNA = "always"))
+mean(ntpu_restaurants_fbf$user_ratings_total, na.rm = T)
+totalRating_max <- which.max(
+ntpu_restaurants_fbf$user_ratings_total)
+
+ntpu_restaurants_fbf$name[[totalRating_max]]
+```
