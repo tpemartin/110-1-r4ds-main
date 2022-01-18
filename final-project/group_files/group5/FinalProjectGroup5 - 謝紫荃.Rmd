@@ -1,0 +1,165 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code.
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*.
+
+```{r}
+
+df<-jsonlite::fromJSON("https://raw.githubusercontent.com/tpemartin/110-1-r4ds-main/main/taiwan_vege_restaurant.json")
+
+df <- unique(df)
+df|> duplicated() |> which()
+
+View(df)
+
+   
+```
+
+##identify and remove repeated information
+
+##Address, Telephone, and location are certainly wrong
+
+```{r}
+
+df<-df[-c(3,4,8)]
+  
+```
+
+##remove incorrect information
+
+
+Donation seem to be mix, so we decide to retrieve the Donation Received and DonationGaveAway respectively to observe and calculate the real donationGaveAwatRate, which is more influential for an effective charity shop
+
+```{r}
+
+df$DonationReceived <-  vector("list", length=64)
+
+  for (.x in 1:64) {
+    
+    df$donation[[.x]] |> as.numeric()
+   df$donation[[.x]][[1]]->df$DonationReceived[[.x]]
+   
+  }
+df$DonationReceived |> unlist()->df$DonationReceived
+
+```
+
+##Retrieve Donation Received
+
+```{r}
+df$DonationGaveAway <-  vector("list", length=64)
+
+ for (.x in 1:10) {
+    df$donation[[.x]] |> as.numeric()
+   df$donation[[.x]][[2]]->df$DonationGaveAway[[.x]] 
+ }
+for (.x in 11:16) {
+  NA -> df$DonationGaveAway[[.x]] 
+}
+ for (.x in 17:64) {
+   df$donation[[.x]][[2]]->df$DonationGaveAway[[.x]] 
+ }
+df$DonationGaveAway  |> unlist ()->df$DonationGaveAway 
+```
+
+##Retrieve DonationGaveAway
+
+```{r}
+df$DonationReceived[is.na(df$DonationReceived)] <- 0
+df$DonationGaveAway[is.na(df$DonationGaveAway)] <- 0
+df$DonationRate <-  vector("list", length=64)
+df$DonationReceived[[1]] |> class()
+
+ for (.x in 1:64) {
+   df$DonationGaveAway [[.x]]|> as.numeric()->df$DonationGaveAway[[.x]] |> class()
+   df$DonationReceived [[.x]]|> as.numeric() ->df$DonationReceived [[.x]]
+   Map("/",df$DonationGaveAway [[.x]],df$DonationReceived [[.x]])-> df$DonationRate[[.x]]
+  
+ }
+df$DonationRate |> unlist()-> df$DonationRate 
+order( df$DonationRate ) -> df$DonationRateRank
+df <- df[-5]
+
+```
+
+##Calculate donation rate
+
+
+
+
+## Then consider each shop provide different types of vegetarian, we start to imspect the relationship between the vegetariantypes provided by shop and the actual donationGaveAwayRate.
+
+```{r}
+
+df_selected <- 
+  dplyr::select(df,c('vegetarianTypes','DonationRate')) 
+df_selected$vegetarianTypes |> class() 
+for(.x in seq_along(df_selected$vegetarianTypes)){
+  df_selected$vegetarianTypes[[.x]] <- 
+    paste(df_selected$vegetarianTypes[[.x]], collapse="-")
+}
+df_selected$vegetarianTypes |> unlist() -> df_selected$vegetarianTypes
+
+View(df_selected)
+df_selected |> split(df_selected$vegetarianTypes)->ObservationOnVegeTypes
+
+for ( .x in 1:7) {
+  ObservationOnVegeTypes[[.x]][[2]][is.na(ObservationOnVegeTypes[[.x]][[2]])] <- 0
+}
+View(ObservationOnVegeTypes)
+summarise_toalDonationRate_by_VegeTypes <- 
+  #for each type
+  {
+    
+    toalDonationRate_by_VegeTypes <-vector("numeric", length(ObservationOnVegeTypes))
+     names(toalDonationRate_by_VegeTypes) <- names(ObservationOnVegeTypes)
+  for(.x in seq_along(ObservationOnVegeTypes)){
+      ObservationOnVegeTypes[[.x]]$DonationRate |> sum() -> toalDonationRate_by_VegeTypes[[.x]]
+  }
+  
+  toalDonationRate_by_VegeTypes|> sort(decreasing = T)
+  }
+  View(summarise_toalDonationRate_by_VegeTypes)
+
+```
+
+##Observe whether providing different Vegetarian type would influence the donation rate or not
+
+```{r}
+df_selected2 <- 
+  dplyr::select(df,c('rating','DonationRate')) 
+df_selected2$rating |> class() 
+
+
+df_selected2$rating |> unlist() -> df_selected2$rating
+df_selected2$DonationRate  |> unlist() -> df_selected2$DonationRate 
+View(df_selected2)
+
+df_selected2 |> split(df_selected2$rating)->ObservationOnRating
+View(ObservationOnRating)
+InfleunceOfRating <- 
+  #for each type
+  {
+    
+    toalDonationRate_by_rating <-vector("numeric", length(ObservationOnRating))
+     names(toalDonationRate_by_rating ) <- names(ObservationOnRating)
+  for(.x in seq_along(ObservationOnRating)){
+      ObservationOnRating[[.x]]$DonationRate |> sum() -> toalDonationRate_by_rating [[.x]]
+  }
+  
+  toalDonationRate_by_rating|> sort(decreasing = T)
+  }
+  View(InfleunceOfRating)
+
+```
+##observe how different rating would influence the donation rate
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.

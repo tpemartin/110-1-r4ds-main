@@ -1,0 +1,67 @@
+```{r}
+accident <- list()
+accident$source[[1]] <- 
+  "https://docs.google.com/spreadsheets/d/1TQ6Q6oGAD22Hn1h5GdBXpwCgqY6nWPolQYhjU3LxmNA/edit#gid=5363246860"
+accident$data <-
+  googlesheets4::read_sheet(
+    accident$source[[1]]  
+  )
+```
+
+
+```{r}
+accident <- jsonlite::fromJSON("https://datacenter.taichung.gov.tw/swagger/OpenData/a532cf27-39b7-4c22-8b3c-8413b3e59dc7")
+View(accident)
+```
+
+．資料來源
+
+```{r}
+browseURL("https://data.gov.tw/dataset/147030")
+```
+
+．樣本數
+
+```{r}
+final <- list()
+final$obs_number <- accident$data |> nrow()
+final$obs_number
+```
+
+．資料涵蓋範圍
+
+```{r}
+names(accident$data) <- unlist(accident$data[])
+```
+
+．問題一:哪個分布區域發生最多車禍?
+
+```{r}
+accident$區|> table() 
+```
+
+．問題二:速限的高低和車禍發生的次數有沒有關係?
+
+```{r}
+accident$速限 |> table()
+```
+
+#我們提出了以下的疑問，是否發生的區域和速限高低有關?
+首先，(我們先把速限分為高速(50-90)，中速(25-40)，及低速(0-15)
+
+```{r}
+pick_those = accident$速限 %in% c(50,60,70,80,90) 
+accident$速限[pick_those] = 'HighSpeed' 
+
+pick_those = accident$速限 %in% c(25,30,35,40) 
+accident$速限[pick_those] = 'MiddleSpeed' 
+
+pick_those = accident$速限 %in% c(0,1,5,10,15,NA) 
+accident$速限[pick_those] = 'LowSpeed' 
+```
+
+```{r}
+dataSet <- table(data.frame(accident$區,accident$速限))
+dataSet
+```
+
