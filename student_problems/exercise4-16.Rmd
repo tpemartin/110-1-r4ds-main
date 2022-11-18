@@ -1,0 +1,28 @@
+
+One way:
+```{r}
+p <- table(johnDoe$data$發現月)
+pick_max <- p == max(p)
+p[pick_max]
+```
+
+Or look for a different max function:
+```{r}
+p <- table(johnDoe$data$發現月)
+whichIsMax <- which.max(p)
+p[whichIsMax]
+```
+
+I think you use `pick` name too freely. You should stick with my lecture note. `pickXXX` is for comparison that returns logical values. `whichYYY` is for comparison that has position indices as values. 
+
+Object name you create is very important for your brain to think. An object name with meaning will enhance your brain's algorithm process. For example, 
+```{r}
+p <- table(johnDoe$data$發現月)
+```
+p is not a good name. Whenever you need to continue to use p, your brain has to keep a place to remember what p is about. 
+```{r}
+tb_month <- table(johnDoe$data$發現月)
+```
+or similiar to that is a better one. When you need to use tb_month, once you type it you know what it is. It will not block your thinking.
+
+

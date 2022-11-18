@@ -1,0 +1,62 @@
+
+```{r}
+a=3
+b=2
+answer = a+b
+
+```
+
+```{r}
+answer <- 
+{
+  a=3
+  b=2
+  a+b
+}
+```
+
+```{r}
+answer = 
+{
+  a=3
+  b=2
+  a+b
+}
+```
+
+```{r}
+ 
+{
+  a=3
+  b=2
+  a+b
+} -> answer
+```
+
+Layout our algorithm flow:
+```{r}
+task_result <- {
+  # step 1: 
+  
+  # step 2: 
+  
+  # final step:
+}
+```
+
+```{r}
+location_history <- jsonlite::fromJSON("https://www.dropbox.com/s/db2vt4w9u2w7onx/Location%20History.json?dl=1")
+location_history$locations$timestampMs
+lubridate::as_datetime(location_history$locations$timestampMs)
+class(location_history$locations$timestampMs)
+timeStamp_dateTimeClass <- 
+  {
+    # Step 1: convert character to numeric
+    as.numeric(location_history$locations$timestampMs) -> step1
+    # Step 2: given step 1 result, change millisecond to second unit
+    step1/1000 -> step2
+    # Step 3: given step 2 result, convert numeric seconds to date/time class
+    lubridate::as_datetime(step2)
+  }
+```
+

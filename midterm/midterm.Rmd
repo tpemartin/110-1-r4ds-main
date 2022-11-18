@@ -1,0 +1,75 @@
+---
+title: "110-1-r4ds Midterm"
+params:
+  name: "林木木"
+  id: "411073221"
+---
+
+**Please change 林木木 to your name, and 411073221 to your school id.**
+
+**All program lines must be inside a corresponding code chunk, like the one below.**
+
+
+```{r}
+
+```
+
+# Econ Survey
+
+An online survey is distributed to students of Economics department. There are two questions:
+
+  * question 1: Are you happy with our campus? Choose a number from 5(very happy), 4(happy), 3(satisfy), 2( unhappy), to 1(very unhappy). 
+  
+  * question 2: Did you participate in any of the following activities? Check all that apply to you. (student association, school club, school sport team, department sport team)
+
+Other than those two questions, the survey system record also the following information:
+
+  * name  (a character)
+  * grade  (an integer from 1 to 4)
+  
+To collect survey information, we have to design what data structure to use for each submission (aka each observation).
+
+***
+
+For one submission from freshman Mary, whose response to question 1 is 5, to question 2 is student association and department sport team. Consider the following list structure to recorde this observation:
+
+  * name: "Mary"
+  * grade: 1
+  * responses: 
+     1. 5
+     2. c("student association", "department sport team")
+
+Based on the list, we want the following retrievals can get a value shown after # sign.
+```{r}
+observation$name # "Mary"
+observation$grade # 1
+observation$responses[[1]] # 5
+observation$responses[[2]] # c("student association", "department sport team")
+```
+
+Construct a list and bind it with name observation so that the above retrievals deliver the results shown after # sign
+
+```{r}
+observation <- list()
+observation$name <- "Mary"
+observation$grade <- 1
+observation$responses[[1]] <- 5
+observation$responses[[2]] <- list("student association", "department sport team")
+```
+
+
+```{r}
+observation2 <- observation
+observation2$name="John"
+observation2$grade=3
+observation2$responses[[1]]=4
+observation2$responses[[2]]=c("school club")
+unlist(observation2)
+
+unlist(observation) -> obs_unlist
+obs_unlist
+relist(obs_unlist, observation2)
+```
+
+
+

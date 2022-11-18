@@ -1,0 +1,448 @@
+# Element Values
+
+## More on list
+
+When we use `list()`, it is like we are making a list. There are two types of list.
+
+-   non-labelled items
+-   Labelled items
+
+------------------------------------------------------------------------
+
+Shopping list (non-labelled items)
+
+1.  milk
+
+2.  apple
+
+3.  pork
+
+Here 1, 2 and 3 are not their label. It simply represents the position of the item on the shopping list, which is like the position of element value in a list.
+
+It is like
+
+```{r}
+list(
+  "milk", 
+  "apple", 
+  "pork"
+)
+```
+
+------------------------------------------------------------------------
+
+My enrolled course list (labelled list)
+
+-   Compulsory
+
+    -   Principle of Economics,
+
+    -   Calculus,
+
+    -   Accounting
+
+-   Selective
+
+    -   Philosophy,
+
+    -   Chinese Literature
+
+It is like
+
+```{r}
+list(
+  Compulsory = 
+    c("Principle of Economics", 
+      "Calculus", 
+      "Accounting"),
+  Selective = 
+    c("Philosophy", 
+      "Chinese Literature")
+)
+```
+
+------------------------------------------------------------------------
+
+When we make a list it can be nested, like a concert event:
+
+-   name
+
+    -   **Gianandrea Noseda conducts Schumann and Mendelssohn --- With Mikhail Pletnev**
+
+-   time
+
+    -   2021, Oct, 01
+
+-   Program
+
+    -   Robert Schumann, Piano Concerto in A Minor, Op. 54
+
+    -   Felix Mendelssohn-Bartholdy, Symphony No. 4 in A Major, Op. 90, "Italian"
+
+```{r}
+list(
+  name="Gianandrea Noseda conducts Schumann and Mendelssohn — With Mikhail Pletnev",
+  time="2021, Oct, 01",
+  program=list(
+    "Robert Schumann, Piano Concerto in A Minor, Op. 54",
+    "Felix Mendelssohn-Bartholdy, Symphony No. 4 in A Major, Op. 90, Italian"
+  )
+)
+```
+
+When there are several concerts, the list can look like
+
+1.  
+
+    -   name
+
+    -   time
+
+    -   program
+
+2.  
+
+    -   name
+
+    -   time
+
+    -   program
+
+Here the numbers indicate the position of element value. As a list, it would be like:
+
+```{r}
+list(
+  list(
+    name="name1",
+    time="time1",
+    program=list(
+      "music1",
+      "music2"
+    )
+  ),
+  list(
+    name="name2",
+    time="time2",
+    program=list(
+      "musicA",
+      "musicB"
+    )
+  )
+)
+```
+
+::: {.exercise}
+How would you store the following lists:
+
+1.  Shopping list: egg x 2 dozens, milk x 1L, vegetable x 2 kinds.
+2.  Make a list of two courses your take this semester with course name, time, and place
+:::
+
+***
+
+### JSON data
+
+JSON (Javascript Object Notation) is the most common data format that transmit across internet.
+
+```{r}
+browseURL("https://data.gov.tw/dataset/6013")
+
+```
+
+
+```{r}
+concerts <- jsonlite::fromJSON("https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17", simplifyDataFrame = F)
+
+```
+
+
+## Retrieve multiple element values
+
+`[x]` where `x` is either
+
+-   a numeric atomic vector, such as `c(1,2,5)`; or
+
+-   a character atomic vector with element names.
+
+```{r JohnsFamily}
+JohnsFamily <-
+  list(
+    name = "John", age = 35,
+    spouse = list(name = "Mary", age = 32),
+    children = list(
+      list(name = "Bill", age = 5),
+      list(name = "Jane", age = 3)
+    )
+  )
+```
+
+-   There are 4 element values inside `JohnsFamily` list.
+
+```{r}
+# checking how many element values
+length(JohnsFamily)
+# checking element names
+names(JohnsFamily)
+```
+
+John's name and age
+
+```{r}
+JohnsFamily[c(1,2)]
+JohnsFamily[c("name", "age")]
+```
+
+::: {.alert .alert-info}
+When you want to retrieve multiple element values from an object, the resulting vector will be the same type as its source object.
+
+-   Source object `JohnsFamily` is of **list** type.
+
+the returned vector will also be of **list** type.
+:::
+
+------------------------------------------------------------------------
+
+When retrieving one element value it is better to use `[[]]` (or `$` only for list) instead of `[]`.
+
+John's age
+
+```{r}
+JohnsFamily[["age"]] # or JohnsFamily[[2]]
+JohnsFamily["age"] # or JohnsFamily[2]
+```
+
+-   `JohnsFamily[["age"]]` indeed retrieves the element **value**.
+
+-   `JohnsFamily["age"]` create a vector of the same type as `JohnsFamily` to store the retrieved element value.
+
+::: {.alert .alert-info}
+`[]` is designed to retrieve multiple element values. Its resulting vector will always follow the same type as the source object.
+:::
+
+## Replacement
+
+`[[]]<-`, `[]<-`, `$ <-`
+
+```{r}
+JohnsFamilyCopy <- JohnsFamily
+
+JohnsFamilyCopy[[1]] <- "Watson" 
+JohnsFamilyCopy[[1]]
+```
+
+When replace multiple element values at once, you need to respect their source structure, especially the type:
+
+-   element 1 and 2 are from a source of `list` with names `name` and `age`.
+
+```{r}
+JohnsFamilyCopy[c(1,2)] <- 
+  list(name="Watson", age=37) 
+JohnsFamilyCopy[c(1,2)]
+```
+
+::: {.alert .alert-info}
+You can also use
+
+-   `-> [[]]`, `-> []`, `-> $`
+
+    ```{r}
+    "Watson" -> JohnsFamilyCopy[[1]]
+    ```
+
+-   `[[]]=`, `[]=`, `$ =`
+
+    ```{r}
+    JohnsFamilyCopy[[1]] = "Watson"
+    ```
+:::
+
+You can chain retrieval operators:
+
+```{r}
+JohnsFamilyCopy$spouse[["age"]]
+JohnsFamilyCopy$children[[1]]$name
+```
+
+## Add element values
+
+Adding an element value is like
+
+> Retrieve a non-existent element value and bind a value with it
+
+```{r example1}
+example1 <- c("John", "Mary", "Bill")
+example1[["person4"]] <- "Ken"
+example1[c(7,8)] <- c("person7"="Jack", "Janem")
+example1
+```
+
+```{r}
+JohnsFamilyCopy2 <- JohnsFamily
+# Add a new born 
+JohnsFamilyCopy2$children[[3]] <- 
+  list(name="Lisa", age=0) # $ is for list only
+```
+
+::: {.exercise}
+How do you add the new born if you use `JohnsFamilyCopy3$children[3] <-`:
+
+```{r eval=F}
+JohnsFamilyCopy3 <- JohnsFamily
+JohnsFamilyCopy3$children[3] <-
+
+```
+:::
+
+------------------------------------------------------------------------
+
+Adding element values is commonly used to construct whole vector.
+
+For example, we can directly construct the following whole vector
+
+```{r}
+height <- c("001"=177, "002"=183, "003"=173)
+```
+
+Or we can
+
+```{r}
+height <- numeric(0) # Declaration
+
+height[["001"]] <- 177
+height[c("002", "003")] <- c(183, 173)
+```
+
+-   The first step creates an empty vector with type **numeric** and bind that value to a name called `height`.
+
+::: {.alert .alert-info}
+When you bind a name with no value but its value type, it is called **declaration**.
+:::
+
+-   Declaration is necessary since without it there is no value to operate retrieval on -- even our goal is to add values.
+
+------------------------------------------------------------------------
+
+Declare-then-add method is extremely convenient for list construction since a lot of time we know how we want to retrieve the information later.
+
+Suppose we want to construct a list that can retrieve a student's class schedule in the following way later:
+
+```{r}
+# Retrieve the 1st course in semester 1, school year 108
+classSchedule$yr108$semester1[[1]] 
+# Retrieve the course name of the the 1st course in semester 1, school year 108
+classSchedule$yr108$semester[[1]]$name
+# Retrieve the course credit of the the 1st course in semester 1, school year 108
+classSchedule$yr108$semester[[1]]$credit
+```
+
+Suppose the course is "programming for data science" with 2 credits.
+
+Direct construction
+
+```{r}
+classSchedule <- list(
+  yr108 = list(
+    semester1 = list(
+      list(
+        name="programming for data science",
+        credit=2
+      )
+    )
+  )
+)
+```
+
+This requires strong familiarity with **nested** list usage In this case, we can declare an empty list and use add method to complete the list:
+
+```{r}
+classSchedule <- list()
+```
+
+-   Be careful it is not `list(0)`.
+
+```{r}
+# Retrieve the course name of the the 1st course in semester 1, school year 108
+classSchedule$yr108$semester[[1]]$name <- "programming for data science"
+# Retrieve the course credit of the the 1st course in semester 1, school year 108
+classSchedule$yr108$semester[[1]]$credit <- 2
+```
+
+## Remove element values
+
+> Retrieve element values you want and bind it with the source object again
+
+-   `[- c(position_indices)]` will leave those you don't want and retrieve only those that you want.
+
+```{r}
+example2 <- c("John", "Mary", "Bill", person4="Jack")
+
+example2[-c(4)] # retrieves what you want
+
+example2 <- example2[-c(4)] # bind the retrieval of the wanted with the source object
+```
+
+::: {.alert .alert-warning}
+`- c()` does **NOT** work with **element names**, so you cannot:
+
+```{r}
+example2 <- c("John", "Mary", "Bill", person4="Jack")
+example2[-c("person4")]
+```
+:::
+
+::: {.alert .alert-danger}
+Operation `-c()` is designed for keeping **multiple** elements by excluding the unwanted, you always use `[]`:
+
+```{r}
+example2copy1 <- example2copy2 <- c("John", "Mary")
+
+example2copy1[-c(2)] # Okay
+
+exmaple2copy1[[-c(2)]] # Error
+```
+:::
+
+::: {.exercise}
+If John divorced Mary, how do you change the record by removing the spouse element?
+
+```{r, eval=FALSE}
+JohnsFamilyCopy4 <- JohnsFamily
+```
+:::
+
+------------------------------------------------------------------------
+
+list has an external removal technique, which is to bind **NULL** with the retrieved element value.
+
+```{r}
+JohnsFamilyCopy5 <- JohnsFamilyCopy6 <- JohnsFamilyCopy7 <- JohnsFamilyCopy8 <-  JohnsFamily
+```
+
+Techniques that apply to both atomic vector and list:
+
+```{r}
+JohnsFamilyCopy5 <- 
+  JohnsFamilyCopy5[-c(3)]
+```
+
+Techniques that apply only to list
+
+```{r}
+JohnsFamilyCopy6$spouse <- NULL
+```
+
+Remove multiple elements at once:
+
+```{r}
+JohnsFamilyCopy7[c(3, 4)] <- NULL
+```
+
+::: {.alert .alert-danger}
+When removing multiple elements on list, don't use:
+
+```{r}
+JohnsFamilyCopy8[c(3, 4)] <- list(NULL, NULL)
+```
+
+This will become **replacement**. Only replacement on multiple element values requires you to respect its source type.
+:::

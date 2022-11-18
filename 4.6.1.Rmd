@@ -1,0 +1,192 @@
+
+# 4.6.1
+
+```{r}
+c(2, 3, -1) > c(3, 3, 5)
+c(2, 3, -1) >= c(3, 3, 5)
+```
+
+
+
+
+
+```{r}
+pick <- c(2, 3, -1) >= c(3, 3, 5)
+c(2, 3, -1)[pick]
+```
+
+```{r}
+income <- factor(
+  c('20,001-30,000','20,001-30,000','less than 10,000','10,001-20,000','10,001-20,000','20,001-30,000','20,001-30,000','20,001-30,000'),
+  levels=c("less than 10,000", "10,001-20,000", "20,001-30,000"),
+  ordered = T)
+
+income < "10,001-20,000"
+income <= "10,001-20,000" 
+
+pick <- income < "10,001-20,000"
+income[pick]
+which(pick) 
+income[which(pick)]
+```
+
+```{r}
+birthdays <- 
+  lubridate::ymd(
+    c('2017-11-29','2001-11-07','2011-03-30','2014-03-26','2011-04-20','2014-06-11')
+  )
+birthdays |> class()
+# born after 2002
+pick <- birthdays > lubridate::ymd("2002-12-31")
+
+birthdays[pick]
+```
+
+
+```{r}
+pick <- c(5, 10, -1) > 0
+# how many numbers are > 0
+sum(pick) # how many element values satisfy the condition (>0)
+```
+
+```{r}
+pick <- c(5, NA, -1) > 0
+print(pick)
+sum(pick, na.rm = T)
+```
+
+ NA missing a value but there is a value.
+
+```{r}
+pick |> 
+  na.omit() |>
+  sum()
+```
+
+```{r}
+johnDoe <- list()
+johnDoe$source[[1]] <- "https://www.moj.gov.tw/2204/2771/2773/76135/post"
+johnDoe$source[[2]] <- "https://docs.google.com/spreadsheets/d/1g2AMop133lCAsmdPhsH3lA-tjiY5fkGIqXqwdknwEVk/edit#gid=640486514"
+googlesheets4::read_sheet(
+  johnDoe$source[[2]]
+) -> johnDoe$data
+```
+
+```{r}
+johnDoe$data |> View()
+```
+
+# equal
+
+```{r}
+a = 5
+```
+
+```{r}
+a == 5
+```
+
+```{r}
+studentGradesInputFromTA <- 
+  c(88, 52, 73)
+studentGradesFromTeacherCalculation <-
+  c(88, 51, 72)
+```
+
+```{r}
+pick <- studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation
+pick_wrong <- !pick
+pick
+which(pick_wrong)
+```
+
+```{r}
+whichIsTheSame <- 
+  which(
+    pick
+  )
+which(pick)
+print(whichIsTheSame)
+```
+
+
+```{r}
+
+!A == B # negate A then compare it with B
+!(A == B) # compare A with B , then negate the result
+```
+
+
+```{r}
+print(studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation)
+print(!(
+  studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation)
+  )
+
+whichIsDifferent <- 
+  which(
+    !(studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation)
+  )
+
+print(whichIsDifferent)
+```
+
+```{r}
+!(studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation) # the same as
+studentGradesInputFromTA != 
+  studentGradesFromTeacherCalculation
+```
+
+```{r}
+# compare two character vectors
+c("A", "B", "C") == c("B", "A", "C")
+!(c("A", "B", "C") == c("B", "A", "C"))
+c("A", "B", "C") != c("B", "A", "C")
+
+# list is not atomic vector
+list("John", 182, 35) == list("John", 182, 40)
+```
+
+```{r}
+studentGradesInputFromTA2 <- c(
+  82, NA, 73
+)
+studentGradesInputFromTA2 ==
+  studentGradesFromTeacherCalculation
+```
+
+```{r}
+studentGradesFromTeacherCalculation2 <-
+  c(82, NA, 73)
+
+pick <- studentGradesInputFromTA2 ==
+  studentGradesFromTeacherCalculation2
+
+sum(pick, na.rm=T)
+
+```
+
+```{r}
+identical(studentGradesInputFromTA2,
+  studentGradesFromTeacherCalculation2)
+```
+
+```{r}
+studentGradesInputFromTA2
+is.numeric(studentGradesInputFromTA2)
+is.na(studentGradesInputFromTA2)
+```
+
+```{r}
+anyNA(studentGradesInputFromTA2)
+```
+
+
+
+
+

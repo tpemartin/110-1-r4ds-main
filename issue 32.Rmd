@@ -1,0 +1,22 @@
+
+Parsing a date/time character vector without tz setting can yield wrong result.
+
+Also make sure you choose the right tzone expression. 
+```{r}
+subsidiaries <- list()
+subsidiaries$boston <- lubridate::ymd_hms(c("2020 Oct. 13 15:00:00", "2019 Apr. 10 09:30:00"),
+  tz="America/New_York")# boston time zone
+subsidiaries$mykonos <- lubridate::dmy_hms(c("14 Jan., 2021 03:27:00", "8 Aug., 2020 11:20:00"),
+  tz="Europe/Athens") # mykonos time zone
+```
+
+
+```{r}
+lubridate::with_tz(
+  c(
+    subsidiaries$boston,
+    subsidiaries$mykonos
+  ),
+  tz="Asia/Calcutta"
+)
+```

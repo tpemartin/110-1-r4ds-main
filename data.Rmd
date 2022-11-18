@@ -1,0 +1,119 @@
+
+# Google Maps
+
+https://maps.googleapis.com/maps/api/place/findplacefromtext/output?parameters
+
+## nearbysearch
+
+```{r}
+source("support/google.R")
+nearby <- list()
+nearby$location <- 
+  list(lat=24.9464822, lng=121.3736134)
+nearby$radius1000 <- search_nearby(
+  nearby$location,
+  type="restaurant",
+  radius=500)
+nearby$radius1000 |> get_restaurant_df() ->
+  restaurants[[1]]
+nextPages <- list()
+nearby$radius1000$content$next_page_token |>
+  next_page() -> nextPage
+nextPages[[1]] <- nextPage
+nextPages[[1]]$content$next_page_token |>
+  next_page() -> nextPages[[2]]
+nextPages[[2]]$content$results |> 
+  purrr::transpose() |> 
+  list2DF() |> View()
+get_restaurant_df <- function(x){
+  x$content$results |> 
+  purrr::transpose() |> 
+  list2DF()
+}
+
+restaurants <- list()
+nearby$radius1000 |> get_restaurant_df() ->
+  restaurants[[1]]
+nextPages |> purrr::map(get_restaurant_df) -> allNextRestaurants
+append(restaurants, allNextRestaurants) ->
+  restaurants
+restaurants |> purrr::reduce(dplyr::bind_rows) ->   df_restaurants
+df_restaurants |> View()
+
+details <- list()
+df_restaurants$place_id[[1]] |> 
+  get_detailsOfOnePlace(fields="",
+    Sys.getenv("googleAPIKey")) ->
+  details[[1]]
+
+df_restaurants |> jsonlite::toJSON() |>
+  xfun::write_utf8("ntpu_restaurants.json")
+
+df_restaurants2 <- 
+  jsonlite::fromJSON("ntpu_restaurants.json")
+```
+
+## details look up
+
+```{r}
+source("support/google.R")
+restaurants <- 
+  jsonlite::fromJSON("ntpu_restaurants.json")
+details <- list()
+restaurants$place_id[[1]] |>
+  get_detailsOfOnePlace(fields="",
+    Sys.getenv("googleAPIKey")) ->
+  details[[1]]
+
+jsonlite::toJSON(nearby) |>
+  xfun::write_utf8(con="nearby.json")
+```
+
+```{r}
+jsonlite::fromJSON("https://www.dropbox.com/s/iu5tvcl8o1cz1x4/nearby.json?dl=1") -> nearby
+```
+
+## New Taipei Real Estate
+
+  * <https://plvr.land.moi.gov.tw/DownloadOpenData>
+  
+```{r}
+library(readr)
+realEstate_newTaipei <- list()
+realEstate_newTaipei$source<- "https://www.dropbox.com/s/hh96tmemlh21naj/f_lvr_land_a.csv?dl=1"
+realEstate_newTaipei$data$raw <- 
+  read_csv(realEstate_newTaipei$source)
+
+realEstate_newTaipei$data$raw[-1, ] ->
+  dataSet
+{
+  dataSet_columnClass <- 
+  {
+    purrr::map(dataSet, class) ->
+      dataSet_columnClass
+  }
+  
+  dataSet$交易年月日 <- 
+  {
+    dataSet$交易年月日 |> 
+      as.numeric() -> series
+    
+    series + 19110000 -> series
+    lubridate::ymd(series) -> series
+  }
+  
+  {
+    dataSet$鄉鎮市區 |>
+      factor() -> series
+    print(series)
+    levels(series)
+    {
+      series
+    }
+  }
+  
+
+}
+
+```
+

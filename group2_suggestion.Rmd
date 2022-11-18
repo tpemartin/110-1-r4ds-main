@@ -1,0 +1,76 @@
+範圍為新北跟台北
+平價餐廳
+分為甜點及主食類
+主食類細分為吃到飽 和 一般餐廳
+目標是想做一個美食地圖
+HSIN-YU062 @HSIN-YU062 Dec 15 2021 15:19
+可能會想加上其他功能
+像是 看最新評價 線上客服 訂位 及時人潮
+或是可以結合外送
+直接在我們的APP上一次完成 不需要再連
+不需要再一個一個去找
+HSIN-YU062 @HSIN-YU062 00:14
+我資料會想要從各個部落客寫的文章去抓
+我明天會找一些
+我的構想是 希望幫助那些有各種需求的人像
+針對不同客群
+有各種不同的需求
+總而言之
+1 各式餐廳(分類為 吃到飽及 單點式
+
+> 這邊是資料整理，你把網上資料拿下來後用統一的格式來記錄整理。可能會希望整理完後的資料(restaurant_data) 可以做到
+
+```{r}
+
+get_all_you_can_eat(restaurant_data) # resturn 吃到飽 restaurants only
+get_a_la_cart(restaurant_data) # return 單點式 restaurants only
+```
+
+
+2 針對不同需求的客人 要推薦不同種類 (情侶
+要浪漫氣氛佳
+家族聚會要找可以大聲聊天 或是有包廂
+
+
+
+使用這款app的人可以 輸入各種不同需求
+系統會自動找到符合這些需求的餐廳
+然後這款app 會列出清單 然後使用者可以自勾選時間與人數
+app會自動依照使用者從符合清單中排名的餐廳自動訂位
+餐廳方也可以透過這款app 看到訂位狀況
+所有的訂位都可以透過這款app
+若是第一順位的餐廳已滿
+app會自動聯絡第二順位的餐廳 直到
+結果確定
+會發訊息通知使用者
+這是我的想法
+HSIN-YU062 @HSIN-YU062 00:25
+```{r}
+restaurant_data <-  # 模擬資料 suppose observation-by-observation
+```
+
+具體用程式操作 我首先會找大量餐廳資料
+然後希望會根據部落客們的描述給餐廳
+加上各種特色標籤 例如#情侶 #家庭 #日式 等
+還經描述也要加上 像是#浪漫 #懷舊
+食物風格也想單獨做標籤
+
+```{r}
+#' Add a tag to i-th restaurant in restaurant_data
+#'
+#' @param i 
+#' @param restaurant_data 
+#'
+#' @return an updated restaurant_data
+tag_restaurant <- function(i, restaurant_data){
+  
+  
+  return(restaurant_data)
+}
+```
+
+用餐完可以在此款app上做評價 給下一個
+人做參考
+老師如果有看到麻煩給我一些建議 謝謝老師~
+我的程式成績不太好 但我會盡力做出來
+_

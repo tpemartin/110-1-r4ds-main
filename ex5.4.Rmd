@@ -14,6 +14,8 @@ wdi$data <- googlesheets4::read_sheet(
 
 1. The following code remove any non country entry in the data. 
 
+
+
 ```{r}
 data_set <- wdi$data 
 iso2c_nonCountry <- c('ZH','ZI','1A','S3','B8','V2','Z4','4E','T4','XC','Z7','7E','T7','EU','F1','XE','XD','XF','ZT','XH','XI','XG','V3','ZJ','XJ','T2','XL','XO','XM','XN','ZQ','XQ','T3','XP','XU','XY','OE','S4','S2','V4','V1','S1','8S','T5','ZG','ZF','T6','XT','1W')

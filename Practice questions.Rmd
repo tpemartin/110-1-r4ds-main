@@ -1,0 +1,26 @@
+---
+title: "110-1-r4ds Midterm"
+params:
+  name: "林木木"
+  id: "411073221"
+---
+
+**Please change 林木木 to your name, and 411073221 to your school id.**
+
+**All program lines must be inside a corresponding code chunk, like the one below.**
+
+
+```{r}
+
+```
+
+## 1
+
+Given the data path "https://www.dropbox.com/s/db2vt4w9u2w7onx/Location%20History.json?dl=1"
+
+### 1.1
+Download the file and bind the data set to location: 
+```{r}
+location <- jsonlite::fromJSON("https://www.dropbox.com/s/db2vt4w9u2w7onx/Location%20History.json?dl=1")
+```
+

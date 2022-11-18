@@ -1,0 +1,194 @@
+
+```{r}
+oneComingStudentMajor <- sample(c("Economics", "Sociology"), 1)
+print(oneComingStudentMajor)
+
+# oneComingStudentMajor == "Economics"
+print("Please go to room 201.")
+
+# oneComingStudentMajor == "Sociology"
+print("Please go to room 301.")
+```
+
+if(){....}
+
+```{r}
+
+oneComingStudentMajor <- sample(c("Economics", "Sociology"), 1)
+print(oneComingStudentMajor)
+
+if(oneComingStudentMajor == "Economics"){
+  print("Please go to room 201.")
+}
+# oneComingStudentMajor == "Economics" is a flag
+
+if(oneComingStudentMajor == "Sociology"){
+  print("Please go to room 301.")
+}
+# oneComingStudentMajor == "Sociology" is a flag
+```
+
+control flow
+
+
+```{r}
+# T flag will always release the block for execution
+if(T){print("TRUE block")}
+# F flag will never release the block for execution
+if(F){print("FALSE block")}
+```
+
+```{r}
+# T flag will always release the block for execution
+if(c(T,T)){print("TT")}
+if(c(T,F)){print("TF")}
+if(c(F,F)){print("FF")}
+if(c(F,T)){print("FT")}
+```
+
+```{r}
+Sys.setenv("_R_CHECK_LENGTH_1_CONDITION_" = "false")
+```
+
+
+```{r}
+# Use any() / all() if appropriate
+if(c("a", "b")=="a"){print("case 1")}
+if(any(c("a", "b")=="a")){print("case 2")} # any one of them is TRUE
+if(all(c("a", "b")=="a")){print("case 3")} # all of them are TRUE
+```
+
+```{r}
+if(NA){print("case 1")}
+
+```
+
+
+```{r}
+# use `isTRUE` to ensure the block is relased only when a legitimate flag value of TRUE happens
+if(isTRUE(T)){print("case 1")}
+if(isTRUE("a")){print("case 2")}
+if(c(T,T)){print("case 3")}
+if(isTRUE(c(T,T))){print("case 3")}
+if(isTRUE(NA)){print("case 4")}
+
+# there is also `isFALSE`.
+```
+
+# rock-paper-scissor
+
+```{r}
+rstudioapi::showPrompt('', message="Input r for rock, p for paper, or s for scissor") -> userChoice
+
+computerChoice <- sample(c("r", "p", "s"), 1)
+
+print(glue::glue("You chose {userChoice}, computer chose {computerChoice}"))
+
+combination <- paste0(userChoice, computerChoice)
+
+### Three control flows
+## r(ock) > s(cissor) > p(aper) > r
+# If user won
+if(combination %in% c("rs", "sp", "pr")){print("You won.")}
+
+# If computer won,
+if(combination %in% c("sr", "ps", "rp")){print("Computer won.")}
+
+# If tie,
+if(combination %in% c("rr", "ss", "pp")){print("There is a tie.")}
+```
+
+```{r}
+get_rock_paper_scissor_combination <- function(){
+  rstudioapi::showPrompt('', message="Input r for rock, p for paper, or s for scissor") -> userChoice
+  
+  computerChoice <- sample(c("r", "p", "s"), 1)
+  
+  print(glue::glue("You chose {userChoice}, computer chose {computerChoice}"))
+  
+  outcome <- c("user"=userChoice, "computer"=computerChoice)
+  
+  return(outcome)
+}
+```
+
+## else if
+
+```{r}
+outcome <- get_rock_paper_scissor_combination()
+combination <- paste(outcome, collapse="")
+
+### One control flow
+# r > s > p > r
+if(combination %in% c("rs", "sp", "pr")){print("You won.")} else
+if(combination %in% c("sr", "ps", "rp")){print("Computer won.")} else
+if(combination %in% c("rr", "ss", "pp")){print("There is a tie.")}
+```
+
+## else
+
+```{r}
+outcome <- get_rock_paper_scissor_combination()
+combination <- paste(outcome, collapse="")
+# r > s > p > r
+if(combination %in% c("rs", "sp", "pr")){print("You won.")} else
+if(combination %in% c("sr", "ps", "rp")){print("Computer won.")} else
+{print("There is a tie.")}
+```
+
+
+```{r}
+outcome <- get_rock_paper_scissor_combination()
+combination <- paste(outcome, collapse="")
+
+flag_valid <- outcome[["user"]] %in% c("r", "s", "p")
+# r > s > p > r
+if(flag_valid & combination %in% c("rs", "sp", "pr")){print("You won.")} else
+if(flag_valid & combination %in% c("sr", "ps", "rp")){print("Computer won.")} else
+if(flag_valid & combination %in% c("rr", "ss", "pp")){print("There is a tie.")} else
+{print("Please input only r, s or p.")}
+```
+
+ `&` and `|`: computer will check all conditions.
+ 
+```{r}
+flag_valid & 
+  combination %in% c("rs", "sp", "pr")
+```
+
+```{r}
+flag_valid && 
+  combination %in% c("rs", "sp", "pr")
+
+```
+
+  `&&`: 
+
+
+```{r}
+TRUE || x # will return TRUE even x is unknown.
+TRUE | x # will return ERROR
+```
+
+```{r}
+FALSE && x # will return FALSE even x is unknown.
+FALSE & x # will return ERROR
+```
+
+```{r}
+outcome <- get_rock_paper_scissor_combination()
+combination <- paste(outcome, collapse="")
+
+flag_valid <- outcome[["user"]] %in% c("r", "s", "p")
+# r > s > p > r
+if(!flag_valid){
+  print("Please input only r, s or p.")
+} else
+if(combination %in% c("rs", "sp", "pr")){print("You won.")} else
+if(combination %in% c("sr", "ps", "rp")){print("Computer won.")} else
+{print("There is a tie.")}
+```
+
+
+
+

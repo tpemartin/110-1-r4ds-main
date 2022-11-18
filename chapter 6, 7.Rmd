@@ -1,0 +1,192 @@
+```{r}
+dplyr::xxx_function(dataSet1, ...) -> result1
+dplyr::yyy_function(result1, ...) -> final_result
+```
+
+
+```{r}
+dplyr::xxx_function(dataSet1, ...) |>
+  dplyr::yyy_function(...) -> final_result
+```
+
+```{r}
+dataSet1 |>
+  dplyr::xxx_function(...) |>
+  dplyr::yyy_function(...) -> final_result
+
+```
+
+## 7.4
+
+```{r}
+drug <- list()
+drug$source[[1]] <- 
+  "https://docs.google.com/spreadsheets/d/17ID43N3zeXqCvbUrc_MbpgE6dH7BjLm8BHv8DUcpZZ4/edit?usp=sharing"
+drug$data <- 
+  googlesheets4::read_sheet(
+    drug$source[[1]]
+  )
+xfun::download_file("https://raw.githubusercontent.com/tpemartin/110-1-r4ds-main/main/support/final_project.R", output="final_project.R")
+source("final_project.R")
+```
+
+```{r}
+# first we correct feature names
+names(drug$data) <- unlist(drug$data[1,])
+# remove the first feature name row
+drug$data <- drug$data[-1,]
+```
+
+```{r}
+dataframe |> 
+dplyr::summarise(
+  統計值名稱1={
+    computation block
+  },
+  統計值名稱2={
+    computation block
+  }
+  
+)
+```
+
+```{r}
+.df <- drug$data
+.df |>
+  dplyr::summarise(
+    樣本數=dplyr::n()
+  ) 
+```
+
+## mutate
+
+```{r}
+.df |> names()
+.df$`數量（淨重）_克` |> class()
+.df |>
+  dplyr::mutate(
+    "數量（淨重）_克"={
+      as.numeric(`數量（淨重）_克`)
+    }
+  ) -> .df
+.df$`數量（淨重）_克` |> class()
+```
+
+
+```{r}
+df |>
+dplyr::mutate(
+  新欄位名稱1={
+    computation block
+  },
+  新欄位名稱2={
+    computation block
+  }
+)
+```
+
+```{r}
+# 傳統作法
+.df$發生日期 |> as.integer() -> .dates
+.dates + 19110000 -> .dates2
+lubridate::ymd(.dates2) -> .df$發生日期2
+```
+
+```{r}
+.df |>
+  dplyr::mutate(
+    發生日期2={
+      發生日期 |> as.integer() -> .dates
+      .dates + 19110000 -> .dates2
+      lubridate::ymd(.dates2)
+    },
+    發生西元年=lubridate::year(發生日期2)
+  )-> .df
+View(.df)
+```
+
+
+```{r}
+.df |> 
+  dplyr::summarise(
+    資料期間={
+      range(發生日期2)
+    }
+  )
+```
+
+
+```{r}
+.df |>
+  dplyr::summarise(
+    有資料年份=unique(發生西元年)
+  )
+```
+
+
+##
+
+```{r}
+.df |> 
+  dplyr::group_by(發生西元年, 毒品品項) |>
+  dplyr::summarise(
+    破獲毒品總重量={
+      `數量（淨重）_克` |>
+        # as.numeric() |> 
+        sum(na.rm=T)
+    }
+  ) |>
+  dplyr::ungroup() -> .summary1
+.summary1
+```
+
+
+```{r}
+.df |> 
+  dplyr::group_by(毒品品項) |>
+  dplyr::summarise(
+    破獲毒品總重量={
+      `數量（淨重）_克` |>
+        as.numeric() |> 
+        sum(na.rm=T)
+    }
+  ) |>
+  dplyr::ungroup() |> #View()
+  dplyr::arrange(
+    dplyr::desc(破獲毒品總重量) # 大到小
+  ) -> .summary2
+
+.summary2
+```
+
+```{r}
+top20s <- .summary2$毒品品項[1:20]
+
+.df |> 
+  dplyr::filter(
+    毒品品項 %in% top20s
+  ) -> .dftop20s
+```
+
+```{r}
+library(dplyr)
+.df |> 
+  group_by(毒品品項) |>
+  summarise(
+    破獲毒品總重量={
+      `數量（淨重）_克` |>
+        as.numeric() |> 
+        sum(na.rm=T)
+    }
+  ) |>
+  ungroup() |> #View()
+  arrange(
+    desc(破獲毒品總重量) # 大到小
+  ) -> .summary2
+```
+
+
+
+
+
+

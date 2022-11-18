@@ -1,0 +1,2690 @@
+# Operations on Atomic Vectors
+
+```{r, echo=FALSE, eval=TRUE}
+klippy::klippy()
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+
+```
+
+## Class
+
+> Types are about data storage. Class defines what we can do to a value.
+
+```{r}
+typeof(c("John", "Mary"))
+typeof(c(2, 3.1412))
+typeof(c(TRUE, TRUE, F))
+```
+
+```{r}
+class(c("John", "Mary"))
+class(c(2, 3.1412))
+class(c(TRUE, TRUE, F))
+```
+
+------------------------------------------------------------------------
+
+Start from the basic 3 types of value, working through various **parsing** functions we can make R understand different human records in different ways and operate on them as human do.
+
+For example, we want know what time it is after 20 seconds from "2021-01-01 12:03:33"
+
+```{r}
+"2021-01-01 12:03:33" + "20 seconds"
+```
+
+-   R does not know "2021-01-01 12:03:33" as time.
+
+-   R does not know "20 seconds" as time, not to mention the concept that one minute has only 60 seconds.
+
+```{r}
+install.packages("lubridate")
+```
+
+```{r}
+lubridate::ymd_hms("2021-01-01 12:03:33") + lubridate::seconds(20)
+```
+
+-   `lubridate::ymd_hms` is a parsing function for R to understand date/time. Once R understands, R will recognise the value as a date/time class ("POSIXct" "POSIXt").
+
+```{r}
+class("2021-01-01 12:03:33")
+class(lubridate::ymd_hms("2021-01-01 12:03:33"))
+```
+
+-   When R understands the value as a date/time value, R will know how to do the operation `+ lubridate::seconds(20)`.
+
+## Common classes of object value
+
+```{r}
+commonClasses <- list()
+```
+
+### Character, numeric, logical
+
+```{r}
+# save three different atomic vectors
+commonClasses$character <- c("John", "Mary", "Bill")
+commonClasses$numeric <- c(2.3, 4, 7)
+commonClasses$logical <- c(TRUE, T, F, FALSE)
+```
+
+```{r}
+# check each atomic vector class
+class(commonClasses$character) # name call on commonClasses to get its value then retrieve the element value whose element name is "character"
+
+class(commonClasses$numeric)
+class(commonClasses$logical)
+```
+
+### Factor
+
+Blood types of 10 persons:
+
+```{r}
+bloodTypes <- c("AB", "AB", "A", "B", "A", "A", "B", "O", "O", "AB")
+```
+
+Represent categorical data (類別資料). Data that
+
+-   has limited number of categories. (here only "A", "B", "O", "AB")
+
+And we normally would like to count how many in each category.
+
+-   Here 3 of "A", 3 of "AB", 2 of "B" and 2 of "O".
+
+To let R understand data is categorical, we use:
+
+```{r}
+bloodTypes_fct <- 
+  factor(bloodTypes)
+```
+
+To know how many categories are there:
+
+```{r}
+levels(bloodTypes_fct)
+```
+
+To count how many persons in each category:
+
+```{r}
+table(bloodTypes_fct)
+```
+
+------------------------------------------------------------------------
+
+When we summarise factor data and tell what we see (such as the number of persons in each blood type), the sequence from `levels(factor_data)` determines the sequence of summary presentation. If we don't like that sequence, we can setup levels when we parse data source:
+
+```{r}
+bloodTypes_fct_levelsSetup <- 
+  factor(bloodTypes, levels=c("A", "B", "O", "AB"))
+```
+
+```{r}
+levels(bloodTypes_fct_levelsSetup)
+table(bloodTypes_fct_levelsSetup)
+```
+
+```{r}
+commonClasses$factor <- bloodTypes_fct_levelsSetup
+class(commonClasses$factor)
+# factor parsed data has factor class
+```
+
+------------------------------------------------------------------------
+
+Some categorical data has the concept of order.
+
+Income levels from 10 households:
+
+```{r}
+household_income <- c("low income", "low income", "middle income", "low income", "high income", "middle income", "high income", "high income", "middle income", "middle income")
+```
+
+```{r}
+household_income_fct <- 
+  factor(household_income)
+levels(household_income_fct)
+```
+
+```{r}
+household_income_fct_levelsSetup <-
+  factor(household_income, levels = c("low income", "middle income", "high income"))
+levels(household_income_fct_levelsSetup)
+```
+
+```{r}
+table(household_income_fct_levelsSetup)
+```
+
+Is first household income level higher than "low income":
+
+```{r}
+household_income_fct_levelsSetup[[1]]
+household_income_fct_levelsSetup[[1]] > "low income"
+```
+
+To make R understand levels sequence has order meaning:
+
+```{r}
+household_income_fct_levelsSetup_ordered <-
+  factor(
+    household_income, 
+    levels = c("low income", "middle income", "high income"),
+    ordered = T
+    )
+```
+
+```{r}
+household_income_fct_levelsSetup_ordered[[1]]
+household_income_fct_levelsSetup_ordered[[1]] > "low income"
+
+household_income_fct_levelsSetup_ordered[[3]]
+household_income_fct_levelsSetup_ordered[[3]] > "low income"
+```
+
+When `ordered=T` the parsed data has two classes, "ordered" and "factor", we normally called it "ordered factor".
+
+```{r}
+commonClasses$ordered_factor <- household_income_fct_levelsSetup_ordered
+class(commonClasses$ordered_factor)
+```
+
+::: {.exercise}
+Parse `customerExperience` into an ordered factor atomic vector:
+
+```{r}
+customerExperience <- c('very happy','very happy','satisfied','satisfied','satisfied','very happy','bad','bad','satisfied','satisfied','bad','happy','happy','very happy','happy','happy','satisfied','very happy','very happy','satisfied','satisfied','very happy','satisfied','bad','very happy','very bad','very happy','bad','bad','very bad')
+```
+:::
+
+### Date/Time
+
+The most challenging task of parsing is to let R knows date and time. For dates, there are typically four systems:
+
+-   ymd: "2021/10/30", "2021-10-30", "2021 October 30", "2021 Oct. 30".\
+-   ydm: "2021/30/10", "2021-30-10", "2021 30 October", "2021 30 Oct."\
+-   mdy: "10/30/2021", "10-30-2021", "October 30, 2021", "Oct. 30, 2021"\
+-   dmy: "30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"
+
+Each system also has a variety of tiny twists on its expression such as the division symbol `/` or `-`, the month expression `October` or `Oct.`.
+
+Fortunately, the package `lubridate` offers four smart functions to deal with each type of date string:
+
+```{r}
+lubridate::ymd(c("2021/10/30", "2021-10-30", "2021 October 30", "2021 Oct. 30"))
+lubridate::ydm(c("2021/30/10", "2021-30-10", "2021 30 October", "2021 30 Oct."))
+lubridate::mdy(c("10/30/2021", "10-30-2021", "October 30, 2021", "Oct. 30, 2021"))
+lubridate::dmy(c("30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"))
+```
+
+```{r}
+# A parsed date data has Date class.
+commonClasses$date <- lubridate::dmy(c("30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"))
+class(commonClasses$date)
+```
+
+------------------------------------------------------------------------
+
+When it comes to date and time, the parsing task is even more daunting. We have to deal with which **time zone** we are talking about. The exact understanding of time involves with date as well. So a time data is actually a date-and-time data, such as "2021/10/30 13:22:52" at Taiwan and "2003 10 Oct. 07:08PM" at London.
+
+Depending on how detailed our time information is, there are three suffix to those four date parsing functions we learned.
+
+-   hms: hour minute second
+
+-   hm: hour minute
+
+-   h: hour
+
+::: {.alert .alert-info}
+For the list of time zones:
+
+-   <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
+:::
+
+------------------------------------------------------------------------
+
+"2021/10/30 13:22:52", "2021-10-31 1:22:52PM" at Taiwan
+
+-   The date format is ymd
+
+-   time format is hms
+
+-   time zone is "Asia/Taipei"
+
+```{r}
+dateTime_taipei <- 
+  lubridate::ymd_hms(
+    c("2021/10/30 13:22:52", "2021-10-31 1:22:52PM"),
+    tz = "Asia/Taipei")
+dateTime_taipei
+```
+
+------------------------------------------------------------------------
+
+"October 30, 2021, 23:10", "Oct. 30, 2021 1:10AM" at London
+
+-   The date format is mdy
+
+-   time format is hm
+
+-   time zone is "Europe/London"
+
+```{r}
+dateTime_london <- 
+  lubridate::mdy_hm(
+    c("October 30, 2021, 23:10", "Oct. 30, 2021 11:10PM"),
+    tz="Europe/London")
+dateTime_london
+```
+
+```{r}
+commonClasses$date_time <- c(
+  dateTime_taipei,
+  dateTime_london
+)
+class(commonClasses$date_time)
+```
+
+-   A parsed date/time data has classes POSIXct and POSIXt. We will call it date/time class.
+
+-   **POSIX** (the Portable Operating System Interface) is a standard (標準化格式); **ct** refers to calendar time and **t** refers to time.
+
+::: {.alert .alert-info}
+Previously we say that values of the same **type** can be concatenated together through `c()` to form an **atomic vector**. Actually the idea of **atomic** is more relaxed. It refers to values of the same **class**.
+
+Here both `dateTime_taipei` and `dateTime_london` are of the same date/time class. So we can concatenate them to form an atomic vector (which is also a date/time class):
+
+```{r}
+c(dateTime_taipei, dateTime_london)
+```
+:::
+
+A single time zone will be used through out the data/time class vector:
+
+```{r}
+commonClasses$date_time
+```
+
+::: {.alert .alert-info}
+Once a date/time source value is parsed, R will understand its meaning and know how to convert it to different time zone through `lubridate::with_tz()`:
+
+```{r}
+dateTime_london_atTaipei <-
+  lubridate::with_tz(
+    dateTime_london,
+    tz="Asia/Taipei"
+  )
+dateTime_london
+dateTime_london_atTaipei
+```
+:::
+
+::: {.alert .alert-danger}
+Be aware that for R to convert time zone the time value must be **parsed** date/time class value. Never do the following:
+
+```{r}
+lubridate::with_tz(
+  c("October 30, 2021, 23:10", "Oct. 30, 2021 1:10AM"),
+  tz="Asia/Taipei"
+)
+```
+:::
+
+::: {.exercise}
+Tata corporate with head quarter in India Deli has two subsidiaries overseas. One is in Mykonos, Greece, and the other is in Boston, USA. It has to deal with the following task constant: receive time information from both subsidiaries and collect them all together with India time zone expression.
+
+Consider the following subsidiaries time information:
+
+```{r}
+subsidiaries <- list()
+subsidiaries$boston <- c("2020 Oct. 13 15:00:00", "2019 Apr. 10 09:30:00") # boston time zone
+subsidiaries$mykonos <- c("14 Jan., 2021 03:27:00", "8 Aug., 2020 11:20:00") # mykonos time zone
+```
+
+Put all four time observation in one atomic vector with date/time class and expressed in Deli India time zone.
+
+```{r, echo=FALSE}
+subsidiaries$boston <- 
+  lubridate::ymd_hms(subsidiaries$boston,
+    tz="America/New_York")
+subsidiaries$mykonos <- 
+  lubridate::dmy_hms(subsidiaries$mykonos,
+    tz="Europe/Athens")
+allTime <- c(
+  subsidiaries$boston,
+  subsidiaries$mykonos
+)
+lubridate::with_tz(
+  allTime,
+  tz="Asia/Calcutta"
+)
+```
+:::
+
+------------------------------------------------------------------------
+
+There are cases when parsing date/time values you don't need to specify `tz` (time zone):
+
+-   The data is from **UTC** time zone (i.e. GMT+0); or\
+-   The data following the ISO8601 expression, which looks like "2021-11-01T17:41:49+0800" (in UTC+08:00 time zone) or "2021-11-01T17:41:49Z" (in UTC time zone).
+
+```{r}
+# No tz required
+# Parsed value will be expressed in UTC time zone
+lubridate::ymd_hms(
+  "2021-11-01T17:41:49+0800"
+)
+```
+
+::: {.alert .alert-danger}
+When time data is already in ISO8601 format and you specified `tz`, it will mean parsing time and then convert to the time zone specified in `tz`:
+
+```{r}
+lubridate::ymd_hms(
+  "2021-11-01T17:41:49+0800", 
+  tz="Europe/London"
+)
+```
+:::
+
+```{r, echo=FALSE}
+library(dplyr)
+vm <- vimeo::vimeoService_create()
+showcase <- vm$get_showcaseVideos(
+  uri="https://vimeo.com/showcase/8857547"
+)
+```
+
+### Data frame
+
+If the data set list is collected **feature-by-feature** so that
+
+-   all the feature vectors have **the same length**.
+
+-   all the feature vectors are **named**.
+
+```{r}
+survey_fbf <-
+  list(
+    age=c(54, 32, 28, 20), # age
+    gender=c("male", "female", "female", "male"), # gender
+    residence=c("north", "south", "east", "east"), # residence
+    income=c(100, 25, NA, 77) # income
+  )
+```
+
+```{r}
+survey_df <-
+  data.frame(
+    survey_fbf
+  )
+```
+
+If you already know you want to collect data feature by feature as a data frame, you can skip using `list()` for collection then use `data.frame()` for class parsing--simply use `data.frame()` for collection directly.
+
+```{r}
+survey_df_1step <-
+  data.frame(
+    age=c(54, 32, 28, 20), # age
+    gender=c("male", "female", "female", "male"), # gender
+    residence=c("north", "south", "east", "east"), # residence
+    income=c(100, 25, NA, 77) # income
+  )
+```
+
+```{r}
+# a parsed collection value will have data.frame class.
+commonClasses$data_frame <- survey_df_1step
+class(commonClasses$data_frame)
+```
+
+```{r}
+commonClasses$data_frame$gender
+```
+
+
+
+------------------------------------------------------------------------
+
+If feature vectors are not atomic vectors:
+
+```{r}
+survey_fbf2 <-
+  list(
+    age=list(54, 32, 28, 20), # age
+    gender=list("male", "female", "female", "male"), # gender
+    residence=list("north", "south", "east", "east"), # residence
+    income=list(100, 25, NA, 77) # income
+  )
+```
+
+-   `data.frame` will not parse it correctly.
+
+```{r}
+data.frame(survey_fbf2)
+```
+
+-   in this case, you use `list2DF()` to convert it to a data.frame instead:
+
+```{r}
+df_survey_fbf2 <- 
+  list2DF(survey_fbf2)
+```
+
+::: {.alert .alert-info}
+When feature vectors are all atomic vectors, use `data.frame` to parse data set list to a data frame When feature vectors are not all atomic vectors, use `list2DF` to parse data set list to a data frame
+:::
+
+<div class="exercise">
+Data frame parsing exercise:  
+  
+  1. Declare a list named dfExercise.
+
+```{r}
+dfExercise <- list()
+```
+
+The following feature-by-feature data set (dataSet1) collects name and age of three persons:
+
+```{r}
+dataSet1 <- list(
+  name=c("John", "Mary", "Ben"),
+  age=c(33, 45, NA)
+)
+```
+
+  2. Please parse the data set into a data frame class and add the parsed data frame to dfExercise$data1.
+  
+  3. We want to add another feature to dataSet1 called children. We want:
+```{r}
+dataSet1$children[[1]][[1]] # shows the first person's 1st child: name is Jane, age is 2
+dataSet1$children[[2]][[1]] # shows the second person's 1st child: name is Bill, age =3
+dataSet1$children[[2]][[2]] # the second pseron's 2nd child: name is Ken, age=0
+dataSet1$children[[3]][[1]] # the 3rd person's 1st child: name is William, age =10
+```
+
+  4. After adding another feature to dataSet1, parse it to a data frame and save the value at dfExercise$data2.
+  
+```{r, echo=FALSE}
+list2DF(dataSet1)
+```
+
+
+</div>
+
+------------------------------------------------------------------------
+
+One advantage of teaching R to understand your data collection as a data frame is that you have one more retrieval operator to use `[.row, .col]`
+
+-   An extension of `[]`. Therefore, the result would maintain the class of the source (still data frame).
+
+-   .row and .col can be atomic vector of element names or element positions.
+
+```{r}
+commonClasses$data_frame[2, "age"]
+commonClasses$data_frame[c(1,4), c("income","age")]
+```
+
+```{r}
+commonClasses$data_frame[c(1,4), ] # 1st and 4th rows and ALL columns
+commonClasses$data_frame[, c("income", "age")] # ALL rows, and the income and age columns
+```
+
+```{r}
+# [.row, .col] can not be used on a list class
+survey_fbf_named[2, "age"]
+```
+
+***
+Anythin we learn about `[]` retrieval also works here.
+
+```{r}
+# Remove
+commonClasses$data_frame[, -c(2)]
+# Replace
+commonClasses$data_frame[2, c( "age","income")] <- data.frame(31, 22)
+commonClasses$data_frame[c(1,2), c("age", "income")] <- data.frame(
+  age=c(10, 15),
+  income=c(10, 15)
+)
+# Add
+commonClasses$data_frame[, "isStudent"] <- data.frame(isStudent=c(T, T, F, T))
+```
+
+<div class="exercise">
+Without using `[.row, .col]` operator, simply using `[]`, `[[]]` and `$` that we learned before to complete the above **remove**, **replace** and **add** actions.
+
+```{r, echo=FALSE}
+# Remove
+commonClasses$data_frame[[2]] <- NULL
+# Replace
+commonClasses$data_frame$age[[2]] <- 31
+commonClasses$data_frame$income[[2]] <- 22
+commonClasses$data_frame$age[c(1,2)] <- c(10, 15)
+commonClasses$data_frame$income[c(1, 2)] <- c(10, 15)
+# Add
+commonClasses$data_frame$isStudent <- c(T, T, F, T)
+```
+
+</div>
+
+
+### Matrix
+
+In math we deal with matrix a lot, which is a two dimensional storage like a data frame but no column names--simply full of numbers.
+
+$$
+\begin{bmatrix}
+2 & 11 & -1\\
+3 & 4 & -5
+\end{bmatrix}
+$$
+
+```{r}
+commonClasses$matrix <- matrix(
+  c(2, 11, -1, 3, 4, -5), nrow=2, 
+  byrow = T # default is by column
+)
+class(commonClasses$matrix)
+```
+
+Not only numbers can form a matrix, heterogeneous types of values can as well.  
+```{r}
+# non atomic matrix
+matrix_nonAtomic <- matrix(
+  list(
+    32, "John", 
+    33, "Jane", 
+    34, "Ben"
+    ), nrow=2
+)
+matrix_nonAtomic
+```
+
+A **matrix** class object can enjoy `[.row, .col]` retrieval as **data frame**.
+
+::: {.alert .alert-info}
+If you already bind the source vector of matrix to a name, say `x`, you can simply change `x`'s dimension to convert it into matrix:
+
+```{r}
+x <- c(2, 11, -1, 3, 4, -5)
+dim(x)
+dim(x) <- c(2, 3)
+```
+
+Actually matrix is an extension of vector, which is simply a vector with dimension attribute (with more way to retrieve values, i.e. `[.row, .col]` way). Therefore, you can still retrieve values from a matrix as from a vector.
+
+```{r}
+x[2, 1] # the same as
+x[2]
+
+x[2, c(2, 3)] # the same as
+x[c(4, 6)]
+```
+
+```{r}
+matrix_nonAtomic
+matrix_nonAtomic[2, 1] # the same as 
+matrix_nonAtomic[2]
+
+matrix_nonAtomic[2, c(2, 3)] # the same as
+matrix_nonAtomic[c(4, 6)]
+```
+:::
+
+***
+
+<figure>
+```{r type-and-class, eval=T, echo=F}
+# knitr::include_graphics("img/type-and-class.jpeg")
+teachDS::img_centering("img/type-and-class.jpeg", "85%")
+```
+<figcaption>Type and class</figcaption>
+</figure>
+
+## Class conversion
+
+Why class conversion?
+
+  * Convert non-atomic vector class to atomic vector class to take advantage of atomic vector's vectorized operations. 
+  
+```{r}
+c(2, 5, 7) + 3 # work
+list(2, 5, 7) + 3 # won't work
+```
+
+For `list(2, 5, 7)+3` to work, you need:
+```{r}
+mylist <- list(2, 5, 7)
+mylist[[1]] <- mylist[[1]]+3
+mylist[[2]] <- mylist[[2]]+3
+mylist[[3]] <- mylist[[3]]+3
+print(mylist)
+```
+
+
+  * To take advantage of methods that can only apply to certain class object.
+  
+```{r}
+c(2, 5, 7) + 3 # work
+c("2", "5", "7") + 3 #won't work
+```
+
+For add a number method can only apply to a numeric class object.
+```{r}
+convert2numeric <- as.numeric(c("2", "5", "7")) 
+convert2numeric + 3
+```
+
+
+### list to atomic vector
+
+-   Use `unlist()`.
+
+```{r}
+examples <- list()
+examples$unlist$source1 <-
+  list("A", "B", "C")
+examples$unlist$result1 <- 
+  unlist(examples$unlist$source1)
+
+print(examples$unlist$source1)
+print(examples$unlist$result1)
+
+class(examples$unlist$source1)
+class(examples$unlist$result1)
+```
+
+-   `unlist()` takes out all **singletons** spotted in a list (no matter how deeply they are nested) and turns them into an atomic vector.
+
+```{r}
+examples$unlist$source2 <- 
+  list(
+    list("A", "B", list("C")),
+    list("D"),
+    "E"
+  )
+examples$unlist$result2 <- 
+  unlist(
+    examples$unlist$source2
+  )
+
+print(examples$unlist$source2)
+print(examples$unlist$result2)
+class(examples$unlist$source2)
+class(examples$unlist$result2)
+```
+
+-   unlisted list is not necessarily a character class. Its class will depend on the singleton's class inside the source list. If they are all numeric, unlisted atomic vector will be of numeric class.
+
+```{r}
+examples$unlist$source3 <- list(5, 6, 7)
+examples$unlist$result3 <-
+  unlist(
+    examples$unlist$source3
+  )
+
+class(examples$unlist$source3) # list class
+class(examples$unlist$result3) # numeric class
+```
+
+-   Only **numeric class** value can have access to `+` method to add numbers.
+
+------------------------------------------------------------------------
+
+Element names, if presented in the list, will be preserved:
+
+```{r}
+namedList <- list(name="John", spouse="Mary")
+
+unlist(
+  namedList
+) -> unlist_namedList
+
+unlist_namedList
+```
+
+::: {.exercise}
+<br>
+
+```{r}
+participations <- 
+list('session 3',c("session 1", "session 2", "session 3"),'session 3',c("session 2", "session 1"),c("session 3", "session 1"),c("session 3", "session 2", "session 1"),'session 2','session 1',c("session 2", "session 1", "session 3"),c("session 3", "session 1", "session 2"))
+```
+
+`participations` represents sessions of speech that ten student had participated.
+
+```{r}
+# sessions that 1st student attended
+participations[[1]] 
+# sessions that 2nd student attended
+participations[[2]]
+```
+
+Try to use `table()` which works only on atomic vectors to summarise number of participants in each sessions with the presentation starts from session 1, then to session 2, then to session 3.
+:::
+
+### atomic vector to list
+
+Occasionally we need to convert an atomic vector to a list class, using `as.list()`:
+
+```{r}
+as.list(
+  c("A", "B", "C")
+)
+
+# element names will be preserved
+as.list(
+  c(name="John", spouse="Mary")
+)
+```
+
+
+### among atomic vectors
+
+You can use `as.targetClass` to convert a value to `targetClass` class. For example, 
+
+  * `as.numeric()` converts a value to a numeric class;
+  
+  * `as.character()` converts a value to a character class;
+  
+so on so forth. Among all class conversion, `as.numeric()` and `as.character()` are mostly commonly used. Here we mainly introduce these two conversions. Possibly also `as.logical()`. 
+
+#### on basic class
+
+For basic classes that directly descends from basic types (i.e. character class, logical class, numeric class), `as.numeric()` and `as.character()` do their jobs directly--and very likely as you expect. 
+
+```{r}
+lgl <- c(TRUE, FALSE)
+num <- c(0.2, 3, 0)
+```
+
+***
+
+#### as.character{-}
+
+```{r}
+as.character(lgl)
+as.character(num)
+```
+
+***
+
+#### as.numeric{-}
+
+Probably the most commonly used conversions since occasionally we desire to apply mathematical computations on the non-numeric vectors. 
+
+##### Apply to logical:{-}
+
+```{r}
+tookRcourse <- c(TRUE, FALSE, TRUE, TRUE)
+as.numeric(tookRcourse)
+howManyTookR <- sum(
+  as.numeric(tookRcourse)
+)
+print(howManyTookR)
+```
+
+  * Form a vector of 0/1 vector. It is mathematically useful. 
+
+<div class="alert alert-info">
+Actually when apply mathematical operations on a logical vector, you don't have to convert its class. In computer science, computer language will always change TRUE to 1 and FALSE to 0 when doing mathematical calculations.
+```{r}
+howManyTookR <- sum(tookRcourse)
+print(howManyTookR)
+```
+</div>
+
+##### Apply to characters:{-}
+
+```{r}
+ming_guoDates <- c("1100822","1090723") # 民國100-8-22，民國109-7-23
+
+# 民國1年 is 1911
+westernDates <- 
+  as.numeric(ming_guoDates) +
+  19110000
+
+westernDates 
+
+lubridate::ymd(westernDates)
+```
+
+***
+
+#### as.logical{-}
+
+##### Apply to numeric: {-}
+
+It helps us know if any numer is zero: 
+```{r}
+# on numeric vector
+# tell us if the number is not zero
+print(num)
+as.logical(num)
+```
+
+Who has a job: 
+```{r}
+# only person with a non-zero wage has a job
+wage <- c(3000, 2000, 0, 1000)
+haveJob <- as.logical(wage)
+haveJob
+```
+
+<div class="alert alert-info">
+`which()` applies to a logical vectors will tell you who have true value:
+
+```{r}
+whoHasAJob <- which(haveJob)
+whoHasAJob
+
+# the wages of those who have a job
+wage[whoHasAJob]
+```
+
+</div>
+
+#### on extended classes
+
+Extended class's value has a feature that it's stored values (i.e. storage type) may be different from it's printed values (i.e. what we see on name call or print).
+
+For extended classes, 
+
+  * `as.numeric()` works on the type of storage of the extended class.
+  
+  * `as.character()` works on the print out of the extended class.
+
+```{r}
+fct <- factor(
+  c('參','貮','貮','貮','壹','貮','參','貮','參','參'),
+  levels=c('壹','貮','參')
+  )
+
+dt <- lubridate::ymd_hms(
+  c('2012-08-25 19:36:00','2018-01-06 10:44:00','2010-03-08 00:56:00')
+)
+```
+
+```{r}
+print(fct)
+as.character(fct)
+
+typeof(fct)
+as.numeric(fct) # the positions in levels
+```
+
+<div class="exercise">
+How do you sum the following Chinese numbers? 
+```{r}
+c('參','貮','貮','貮','壹','貮','參','貮','參','參')
+```
+</div>
+<br>
+<div class="exercise">
+The following is 5 to 9 in Persian language:
+```{r}
+c("۵", "۶", "۷", "۸", "۹")
+```
+How do you sum the following Persian numbers? 
+```{r}
+c('۶','۹','۸','۹','۶','۸','۸','۵','۹','۹')
+```
+
+```{r, echo=F, eval=FALSE}
+fct2 <- factor(
+  c('۶','۹','۸','۹','۶','۸','۸','۵','۹','۹'),
+  levels=c("۵", "۶", "۷", "۸", "۹")
+)
+sum(as.numeric(fct2))+4
+```
+
+</div>
+
+```{r}
+print(dt)
+as.character(dt)
+
+typeof(dt)
+as.numeric(dt) # how many seconds past 1970-01-01 00:00
+```
+
+<div class="alert alert-info">
+A date/time class vector can take numerical operations. The operations are based on its type values.
+
+```{r}
+dt
+dt + 30 # add 30 seconds
+dt + 60*60 # add 1 hour
+```
+
+</div>
+
+***
+
+##### An exercise{-}
+
+<div class="alert alert-info">
+Since date/time is stored as seconds past 1970-01-01 00:00, `lubridate::as_datetime()` can convert a numeric value (in second unit) into a date/time class value
+```{r}
+x0 <- 1595950405 # the number of seconds
+lubridate::as_datetime(x0)
+```
+
+  * `lubridate::as_datetime()` treats a number as how many seconds have past since 1970-01-01 00:00:00. 
+  
+</div>
+
+In same cases such as Google data, time stamp is framed in milliseconds (1000 ms = 1 second) past 1970-01-01 00:00:00.000. So 1 = 1970-01-01 00:00:00.001.
+
+```{r}
+location_history <- jsonlite::fromJSON("https://www.dropbox.com/s/db2vt4w9u2w7onx/Location%20History.json?dl=1")
+```
+
+```{r}
+print(location_history$locations$timestampMs)
+```
+
+  * must divide by $10^3$ (`10**3` in code)to make it in second unit before feeding to `lubridate::as_datetime()`.
+
+```{r}
+location_history$locations$timestampMs/(10**3)
+```
+
+-   raise an error, indicate `lubridate::as_datetime()` can only apply to numeric values.
+
+```{r}
+timeStampMs_as.numeric <- 
+  as.numeric(
+    location_history$locations$timestampMs
+  )
+timeStamp_inSecondUnit <-
+  timeStampMs_as.numeric/(10**3)
+
+timeStamp_dateTimeClass <-
+  lubridate::as_datetime(
+    timeStamp_inSecondUnit
+  )
+```
+
+-   `as.numeric()` to convert to numeric values.
+
+-   `/(10**3)` to convert milliseconds to seconds.
+
+## Programming Block
+
+When task goal achievement requires multiple steps, it is good to use **programming block** `{...}` to put all the steps in one big `{ }` chunk. 
+
+  * `{...}` codes work as without `{...}` before; but...
+  
+  * it gives flexibility of result binding, where result is the **last-executed** line inside `{...}` (whose value will be temporarily saved at `.Last.value`)
+  
+  * `a <- {...}`, `{...}-> a`, `a={...}`. All three will bind `.Last.value` to `a`.
+  
+Most task involves with getting some result value and bind (save) it to an object name. To get the result value, we layout steps to obtain the result. Using programming block, we can formulate a task as:
+
+```{r}
+task_result <- {
+  # step 1: 
+  
+  # step 2: 
+  
+  # final step:
+}
+```
+
+Take converting character millisecond time stamp to a date/time class as an example. 
+
+Task goal: Obtain a data/time class result value
+
+Planning our steps:
+
+  * Step 1: convert character to numeric
+  
+  * Step 2: given step 1 result, change millisecond to second unit
+  
+  * Step 3: given step 2 result, convert numeric seconds to date/time class
+  
+```{r}
+timeStamp_dateTimeClass <- 
+  {
+    # Step 1: convert character to numeric
+    
+    # Step 2: given step 1 result, change millisecond to second unit
+    
+    # Step 3: given step 2 result, convert numeric seconds to date/time class
+    
+  }
+```
+
+Then we ask ourselves for each step, how do I program it correctly.
+
+```{r}
+timeStamp_dateTimeClass <- 
+  {
+    # Step 1: convert character to numeric
+    as.numeric(location_history$locations$timestampMs) -> step1
+    
+    # Step 2: given step 1 result, change millisecond to second unit
+    step1/(10**3) -> step2
+    
+    # Step 3: given step 2 result, convert numeric seconds to date/time class
+    lubridate::as_datetime(step2)
+  }
+```
+
+<div class="alert alert-info">
+In RStudio, you can click `{...}` to fold or unfold the block. 
+You can also select the whole block and press Ctrl+Enter (in Windows) or Command+Enter (in Mac) to execute just that block. Then check `.Last.Value`. 
+</div>
+
+<div class="exercise">
+
+A school adopt letter grade system from C to A+ as follows:
+```{r}
+letter_grades <- c("C", "B-", "B", "B+", "A-", "A", "A+")
+```
+
+However, when there is need to calulate GPA, they convert each letter grade to each value in the following numeric_grades vector:
+```{r}
+numeric_grades <- c(2, 2.5, 3, 3.5, 4, 4.5, 5)
+```
+
+A student with the following letter grades need to convert them to numeric_grades:
+```{r}
+studentGrades <- c('B','A','A+','B+','A-','B','B-','B','A+','B+','C','B-','B-','B','C','C','B+','B','B+','B')
+
+```
+
+He asked you for help. You layout the following programming plan:
+
+```{r}
+studentLetterGrades <- {
+  # Task map c("C", "B-", "B", "B+", "A-", "A", "A+") to c(2, 2.5, 3, 3.5, 4, 4.5, 5)
+  
+  # step1: for each grade in studentGrades find its position in c("C", "B-", "B", "B+", "A-", "A", "A+") so if studentGrades = c("C","A-"), step1 = c(1, 5) since c("C", "B-", "B", "B+", "A-", "A", "A+")[c(1, 5)] will give him "C", "A-"
+  
+  # step2: Use step1 result as position indices to retrieve from c(2, 2.5, 3, 3.5, 4, 4.5, 5). From previous example, step1=c(1, 5), then  c(2, 2.5, 3, 3.5, 4, 4.5, 5)[step1] will give him c(2, 4)
+  
+}
+```
+
+Complete the programming block.
+</div>
+
+## Pipe Operator
+
+Consider to parse the following character vector into a factor, and
+
+  * Its levels sequence starting from the one with the highest count to the lowest.
+  
+```{r}
+chr <- c('C','C','C','A','C','A','A','B','B','B','B','C')
+```
+
+
+Programming block:
+```{r}
+newLevels <- 
+{
+  # table check
+  
+  # sort in decreasing order
+  
+  # take out table item names
+  
+}
+fct_chr <- factor(chr, levels=newLevels)
+```
+
+```{r}
+newLevels <- 
+{
+  # table check
+  tb_chr <- table(chr)
+  # sort in decreasing order
+  sorted_tb_chr <- sort(tb_chr, decreasing = T)
+  # take out table item names
+  names(sorted_tb_chr)
+}
+fct_chr <- factor(chr, levels=newLevels)
+```
+
+### `|>`
+
+```{r}
+f(x) # the same as
+x |> f() # read as use x to do f
+
+g(x, y) # the same as
+x |> f(y)
+
+g(f(x), y) # the same as
+g(x |> f(x), y) # the same as
+x |> f(x) |> g(y) # read as use x to do f, then (take the result) to do g
+```
+
+```{r}
+newLevels <- 
+{
+  # table check
+  tb_chr <- table(chr)
+  # sort in decreasing order
+  sorted_tb_chr <- sort(tb_chr, decreasing = T)
+  # take out table item names
+  names(sorted_tb_chr)
+  
+  # the same as ---
+  
+  chr |> 
+    # table check
+    ## read: take chr to do table
+    table() |> 
+    # sort in decreasing order
+    ## read: then (with the result) 
+    ##       to do sort
+    sort(decreasing=T) |> 
+    # take out table item names
+    ## read: then (with the result)
+    ##       to do names
+    names()
+}
+fct_chr <- factor(chr, levels=newLevels)
+```
+
+Which one is easier to read? 
+```{r}
+table(chr) -> tb_chr
+sort(tb_chr, decreasing=T) -> sorted_tb_chr
+names(sorted_tb_chr)
+```
+
+```{r}
+chr |> 
+  table() |> 
+  sort(decreasing=T) |>
+  names()
+```
+
+
+<div class="alert alert-info">
+You can use hotkey: **Cmd/Ctrl + Shift + M**, to insert pipe operator after you:
+  
+  * Tools > Global Options > Code  
+    * check **Use native pipe operator, |> **
+</div>
+  
+
+### `%<>%` and `%T>%`
+
+Pipes in **magrittr** package.
+
+```{r}
+library(magrittr) # import all the functions in this package
+```
+
+<div class="alert alert-info">
+`library(pkg)` import all functions in `pkg`. Using pkg's functions, say `fx` and `fy`, we used to write:
+```{r}
+pkg::fx(...)
+pkg::fy(...)
+```
+Now you can:
+```{r}
+library(pkg) # do only ONCE in your entire program
+fx(...) 
+fy(...) 
+```
+With `library(pkg)`, you can still use `pkg::fx(...)` expression. 
+
+Sometimes, two packages `pkg1` and `pkg2` have functions of the same name, say `fcommon`, then
+```{r}
+library(pkg1)
+library(pkg2)
+fcommon(...) # will use pkg2
+pkg1::fcommon(...) # ensure using the one from pkg1
+```
+
+</div>
+
+***
+
+  * `%<>%`: do then immediately save back
+
+Convert feature **types** into factor:
+```{r}
+df <-
+data.frame(
+  types = c('C','C','C','A','C','A','A','B','B','B','B','C'),
+  response = c(83,59,54,68,64,88,72,73,66,94,53,55)
+)
+```
+
+```{r}
+df$types |> 
+  factor() -> df$types
+
+# the same as
+df$types %<>% factor() # read: use df$types to do factor, then immediately save back
+```
+
+***
+
+  * `%T>%`: temporarily check
+
+Sometimes we want to do a temporary quick glimpse (i.e., `print`, `view`, `plot`) of a middle step before we proceed the following pipe:
+
+```{r}
+df$type |> # read: use df$type, to do factor
+  factor() %T>%  # then temporarily check print, then use the earlier result
+    print() |> # to do table
+  table()
+```
+
+
+## Operations on atomic vectors
+
+In this section, we learn operations that works on **ALL ATOMIC** vectors regardless of their class.
+
+  * If apply to **list**, it will be **unlist**ed by coercion. (Sometimes weird things happen under coercion. Be aware.)
+  
+### Comparison
+
+
+#### Magnitude Comparison
+
+  * larger than: `>`
+  
+  * larger than or equal to: `>=`
+  
+  * smaller than: `<`
+  
+  * smaller than or equal to: `<=`
+
+```{r}
+c(2, 3, -1) > c(3, 3, 5)
+c(2, 3, -1) >= c(3, 3, 5)
+```
+
+<div class="alert alert-info">
+
+  * when returned value is a logical vector, it can be used in `[]` to pick element values that satisfy the criterion.
+  
+```{r}
+pick <- c(2, 3, -1) >= c(3, 3, 5)
+c(2, 3, -1)[pick]
+```
+
+</div>
+```{r}
+income <- factor(
+  c('20,001-30,000','20,001-30,000','less than 10,000','10,001-20,000','10,001-20,000','20,001-30,000','20,001-30,000','20,001-30,000'),
+  levels=c("less than 10,000", "10,001-20,000", "20,001-30,000"),
+  ordered = T)
+
+income < "10,001-20,000"
+income <= "10,001-20,000" 
+
+pick <- income < "10,001-20,000"
+income[pick]
+which(pick)
+```
+
+
+```{r}
+birthdays <- 
+  lubridate::ymd(
+    c('2017-11-29','2001-11-07','2011-03-30','2014-03-26','2011-04-20','2014-06-11')
+  )
+
+# born after 2002
+pick <- birthdays > lubridate::ymd("2002-12-31")
+
+birthdays[pick]
+```
+
+<div class="alert alert-info">
+Logical vector when summed will treat TRUE as 1, FALSE as 0.
+```{r}
+pick <- c(5, 10, -1) > 0
+sum(pick)
+```
+However, when there is `NA`. Comparison on `NA` is always `NA`
+```{r}
+pick <- c(5, NA, -1) > 0
+pick
+sum(pick)
+```
+
+You can add `na.rm=T` to set NA removed in almost all operation functions.
+
+```{r}
+sum(pick, na.rm = T)
+```
+
+
+</div>
+
+<div class="exercise">
+
+Run exercise 1 from Exercise section to create `johnDoe`. How many dead bodies were discovered after year 2012 (exclude 2012)?
+
+```{r, echo=F}
+pick <- list()
+pick$discovered_after_2012 <-  johnDoe$data$發現年 > 101
+table(pick$discovered_after_2012, useNA="always")
+sum(pick$discovered_after_2012, na.rm=T)
+```
+
+  
+</div>
+
+#### Equal and identical {-}
+
+For equal we use `==` to compare two vectors element-by-element: 
+
+```{r}
+studentGradesInputFromTA <- 
+  c(88, 52, 73)
+studentGradesFromTeacherCalculation <-
+  c(88, 51, 72)
+```
+
+Are all grades correctly input from both sides:
+```{r}
+studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation
+```
+
+  * return a logical vector.
+  
+  * TRUE means equal. FALSE means not equal.
+
+<div class="alert alert-danger">
+For equal comparison, you have to use `==` instead of `=`. (The latter is for name-value binding.)
+</div>
+<br>
+
+<div class="exercise">
+ 
+How many dead bodies in `johnDoe` have age upper limit (年齡範圍上限) equal to 0?
+
+```{r, echo=FALSE}
+pick$age_upper_limit_0 <-
+  johnDoe$data$年齡範圍上限 == 0
+```
+
+</div>
+
+##### which{-}
+
+Apply `which()` to a logical vector will give you the location of the **TRUE**s. 
+```{r}
+whichIsTheSame <- 
+  which(
+    studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation
+  )
+print(whichIsTheSame)
+```
+
+##### `!`{-}
+
+Apply `!` to a logical vector will turn TRUE/FALSE to FALSE/TRUE value respectively. This is call a **negate** operation.
+```{r}
+print(studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation)
+print(!(studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation))
+
+whichIsDifferent <- 
+  which(
+    !(studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation)
+  )
+
+print(whichIsDifferent)
+```
+
+<div class="alert alert-info">
+Actually there is a straight forward **not equal** operator `!=`. 
+```{r}
+!(studentGradesInputFromTA == 
+  studentGradesFromTeacherCalculation) # the same as
+studentGradesInputFromTA != 
+  studentGradesFromTeacherCalculation
+```
+</div>
+<br>
+
+`==` and `!=` can be used to compare atomic vectors of the same class, not necessarily limited to numeric class vector.
+
+```{r}
+# compare two character vectors
+c("A", "B", "C") == c("B", "A", "C")
+!(c("A", "B", "C") == c("B", "A", "C"))
+c("A", "B", "C") != c("B", "A", "C")
+
+# list is not atomic vector
+list("John", 182, 35) == list("John", 182, 40)
+
+```
+
+
+<div class="alert alert-warning">
+**The threat from `NA`.**<br>
+In all kinds of vector, missing value is usually input as `NA`. Anything comparison with `NA` will get you `NA` instead of `TRUE/FALSE`.
+```{r}
+studentGradesInputFromTA2 <- c(
+  82, NA, 73
+)
+studentGradesInputFromTA2 ==
+  studentGradesFromTeacherCalculation
+```
+
+Even comparing `NA` with `NA` still gets you `NA`. 
+
+```{r}
+studentGradesFromTeacherCalculation2 <- c(
+  82, NA, 73
+)
+studentGradesInputFromTA2 == 
+  studentGradesFromTeacherCalculation2
+```
+
+  * `NA` means not available. By definition, it means **there is a value but the value is not recorded**, so `NA` represents a mysterious box the content of which is unknown. Comparing `NA` with `NA` is like asking you to judge whether the contents in both mysterious boxes are the same--the answer is maybe. Therefore, the comparing result is `NA`.
+
+If both objects for comparison have the same class, to see whether its element values are identically recorded using `identical()` is a safer way to compare:
+```{r}
+identical(
+  studentGradesInputFromTA2, 
+  studentGradesFromTeacherCalculation2
+)
+```
+
+  * It returns only one logical value--no element-wise comparison.
+
+</div>
+<br>
+<div class="alert alert-info">
+R has a number of `is.xxx()` functions to apply to a vector to see if `xxx` expression is true. If you want to known whether some element values are `NA`, since `NA==NA` won't work you can use `is.na()` instead:
+```{r}
+is.na(studentGradesInputFromTA2)
+```
+
+`is.na()` has to check every element for NA. If you simply want to know if there is any NA, you should use:
+```{r}
+anyNA(studentGradesInputFromTA2) 
+# which return TRUE when the 1st NA is encountered.
+# fast speed
+```
+
+
+</div>
+
+<br>
+
+<div class="exercise">
+
+For the following two vectors:
+```{r}
+num_input <- 
+  c(1,NA,NA,1,1,NA,1,1,1,NA,NA,1,NA,NA,NA,1,NA,1,NA,1,1,1,1,NA,NA,NA,NA,NA,NA,1)
+chr_input <- 
+  c('NA','1','1','1','NA','NA','1','1','1','1','NA','1','NA','1','1','1','NA','NA','NA','1','NA','NA','NA','NA','NA','1','1','NA','NA','NA')
+```
+
+  1. Find all `NA`'s locations in `num_input`.
+  
+  2. Find all `'NA'`'s locations in `chr_input`. (Be careful. Only `NA` truly mean not available. `'NA'` is an available value with character phrase NA as the value.)
+
+</div>
+
+#### Recycling{-}
+
+```{r}
+# comparing vectors of the same length
+c(2, 3, -1) > c(3, 3, 5)
+
+# comparing vector to a value (which is a vector of length 1)
+income < "10,001-20,000"
+birthdays > lubridate::ymd("2002-12-31")
+```
+
+  * Is the operator for vector comparison or for vector to compare with a value?
+  
+In R's native functions an operators, if its is designed to be able to apply to vectors of the same length, it is not for vectors of unequal length. But why comparing to a value works? This is because of R's built-in **recylcing** mechanism (only for its native functions and operators).
+
+
+<div class="alert alert-info">
+**Recycling** applies to  all **R's native** operators and functions. Whenever input vectors are required to have the same length, the short ones will always be recycled to generate a long and equal length vector to be used.
+
+```{r}
+# long vector
+long_vctr = c("A", "B", "C", "D")
+
+# short vector
+short_vctr = c(1, 2)
+# recycle short_vctr
+short_vctr_recycles = 
+  c(c(1, 2), c(1, 2))[1:4]
+short_vctr_recycles
+
+# short vector
+short_vctr2 = c(1, 2, 3)
+# recycle short_vctr
+short_vctr_recycles2 = 
+  c(c(1, 2, 3), c(1, 2, 3))[1:4]
+short_vctr_recycles2
+```
+
+</div>
+
+Consider `paste()`. `paste(vector1, vector2, vector3)` will glue all **character** (coerced to character if not) vectors of the same length element by element.
+```{r}
+paste(c("Apr.", "May."), c("1", "1"))
+# use recycling
+paste(c("Apr.", "May."), "1")
+```
+
+Suppose you have a time series data. Each observation is half year apart. Starting from 1998-01-01, then 1998-07-01, 1999-01-01, 1999-07-01, ..., to 2021-07-01
+
+```{r}
+.years <- rep(1998:2021, each=2)
+print(.years)
+.monthdays <- c("01-01", "07-01")
+.dates <- paste(.years, .monthdays, sep="-")
+print(.dates)
+```
+
+#### One of them
+
+LHS `%in%` RHS: Is values from LHS one of the values in RHS? 
+
+Useful to deal with questions like:
+
+  * Is New Taipei City part of North Taiwan?
+  
+  * Is Economics department in the school of social science? 
+  
+The target subjects , New Taipei City, Economics department, are checked if it is in a larger set of subjects, set like north Taiwan, the school of social science.
+
+
+```{r}
+# 10 students' majors
+majors <- c('economics','law','economics','sociology','sociology','sociology','sociology','economics','statistics','law')
+# ? who are from the school of social science ?
+
+# define a set of values that the school contain
+set_schoolSocialScience = c("economics", "sociology", "social work")
+pickSchoolSocialScience <-
+  majors %in% set_schoolSocialScience
+which(pickSchoolSocialScience)
+```
+
+<div class="alert alert-warning">
+Comparison is mostly about comparing values. Any slight difference in value expression will be considered not the same. 
+```{r}
+"1995" != "1995 " # even space makes a difference
+"economics" != "Economics" # case matters
+"台灣" != "臺灣"
+```
+
+</div>
+
+<div class="exercise">
+Run exercise 3 from Exercise section to obtain `drug`. 
+
+  1. How many cases have 毒品品項 of 安非他命?
+  
+  2. How many cases have 毒品品項 belonging to the following set?
+```{r}
+drugSet <- c('安非他命','甲基安非他命','二甲氧基安非他命(DMA)','左旋甲基安非他命','3,4-亞甲基雙氧安非他命(MDA)')
+```
+
+</div>
+
+
+```{r, echo=F}
+drug = readRDS("data/drug.Rds")
+drug$data |> View()
+.df <- drug$data
+names(.df)
+names(.df) <- .df[1, ] |> as.character()
+.df[-1, ] -> .df 
+
+# how many types?
+{
+  .df$毒品品項 |> unique()
+}
+# table types
+{
+  .df$毒品品項 |> 
+    table() |>
+    sort()
+}
+# 安非他命
+{
+  .df$毒品品項 |>
+    unique() |>
+    stringr::str_subset("安非") |>
+    teachDS::writeObject2Clip(T)
+}
+# how many 安非他命/percentage
+drug$analysis$安非他命$total_case <- 
+{
+  .pick <-
+    (.df$毒品品項 == "安非他命") 
+  .sum <- 
+    .pick |>
+    sum()
+  
+  list(pick = .pick, sum=.sum)
+}
+drug$analysis$安非他命$percentage_case <- 
+{
+  drug$analysis$`安非他命`$total_case/
+    length(.df$編號)
+}
+# how many 安非他命類
+drug$analysis$安非他命類$total_case <- 
+{
+  (.df$毒品品項
+    %in% c('安非他命','甲基安非他命','二甲氧基安非他命(DMA)','左旋甲基安非他命','3,4-亞甲基雙氧安非他命(MDA)'))
+}
+```
+
+### Pick and Which
+
+Every comparison is about checking if some condition is met. 
+
+```{r}
+pick <- A > 60 # is asking 
+whichMetTheCondition <- which(pick)
+```
+
+  * Both `pick` and `whichMetTheCondition` can be used with `[]` retrieval to retrieve those element values in A that meet the condition >60.
+  
+When the vector for comparison has meaning, like 
+```{r}
+grades <- c(51,70,79,78,67,74,80)
+# mean student grades
+```
+
+then
+```{r}
+pick <- grades > 70 # or
+whichIs70plus <- which(pick)
+```
+
+when combined with `[]`, i.e. `[pick]` or `[whichIs70plus]` retrieval, is like 
+
+  * retrieving those whose **grades** `> 70`. 
+
+Therefore, `xxx[pick]` is retrieving `xxx` values whose grades are >70. Here `xxx` can be a vector different from `grades` vector--so long as the values of the same position in `xxx` and `grades` come from the same observation.
+
+```{r}
+grades <- c(51,70,79,78,67,74,80)
+# same 7 student's gender
+gender <- c('female','female','male','male','female','male','male')
+```
+
+  * Values from the same position in `grades` and `gender` come from the same student.
+ 
+```{r}
+pick <- grades > 70
+gender[pick]
+```
+
+  * `...[pick]`: For those whose grades > 70,
+  
+  * `gender[...]`: their gender is.
+  
+So `gender[pick]` reads:
+
+  *  for those whose grades > 70, their gender is...
+  
+***
+  
+When data set is constructed in a feature by feature case, get `[pick]` or `[which...]` from one feature and apply it to another feature is quite common.
+
+***
+
+Four student's grades in two courses:
+```{r}
+dataSet1 <- 
+  data.frame(
+    school_id = c("001", "002", "003", "004"),
+    course1_grade=c(55, 83, 92, 73),
+    course2_grade=c(50, 88, 72, 77)
+  )
+```
+
+  * For those who have a grade `>=80` in course1, what are their grades in course2?
+
+```{r}
+pick <- dataSet1$course1_grade >=80
+dataSet1$course2_grade[pick]
+```
+
+<div class="alert alert-info">
+If you want to ask:
+
+  * For those who have a grade `>=80`, what are their records (all features' values from them are requested)? 
+
+`[pick]`/`[which...]` can be replaced with `[pick, ]` and `[which..., ]`. This will keep all features as a data frame. This is called a **subsample** in contrast with the original data frame called **sample**.
+
+```{r}
+dataSet1[pick, ] # will keep all the columns in dataSet1
+```
+
+Another way to keep a subsample ( which is a subset) is to use `subset()` function:
+
+```{r}
+subset(dataSet1, course1_grade >=80)
+```
+
+</div>
+
+<br>
+
+<div class="alert alert-warning">
+
+When there is `NA` in `pick`, the `...[pick]` retrieval result for those `NA` pick will be `NA` since computer does not know if he should pick the value or not.
+```{r}
+pick <- c(F, T, NA, T)
+
+c(1, 2, 3, 4)[pick]
+```
+
+</div>
+
+<br>
+
+<div class="exercise">
+Regarding `johnDoe` in exercise 1 of Exercise section, 
+
+1. For those whose reported unit (通報機構) is not `NA`, what are their records? (in other words, construct a  reported-unit-not-`NA` subsample)
+
+```{r, echo=F}
+.df <- johnDoe$data
+reported_unit_notNA <- {
+  pick <- !is.na(.df$通報機關名稱)
+  .df[pick, ]
+}
+```
+
+2. For those dead bodies reported (通報機構) by "海巡隊" (use `=="海巡隊"` here. Ignore other similar unit names), what are their death types (死亡方式描述)? How many bodies in each type?
+
+```{r, echo=F}
+pick <- reported_unit_notNA$通報機關名稱=="海巡隊"
+reported_unit_notNA$死亡方式描述[pick] |>
+  table()
+```
+
+3. For those whose death type (死亡方式描述) is 不詳 or 他殺, what are their discovered counties (發現縣市)? How many such bodies in each counties?
+
+```{r, echo=F}
+pick <- .df$死亡方式描述 %in% c("不詳", "他殺")
+.df$發現縣市[pick] |> 
+  table() |> 
+  sort(decreasing = T)
+```
+
+</div>
+
+### Multiple conditions
+
+<div class="alert alert-danger">
+Only apply to **LOGICAL** vectors.
+</div>
+
+  * and: LHS `&` RHS
+  
+  * or: LHS `|` RHS
+  
+  * not (negate): `!`a_logical_vector
+  
+  * any: `any(a_logical_vector)`
+  
+  * all: `all(a_logical_vector)`
+
+
+```{r}
+gender = c('Female','Male','Male', 'Female')
+age = c(28,41,42,33)
+residence = c('South','South','North', 'North')
+color=c("yellow", "pink", "blue", "green")
+```
+
+***
+
+```{r}
+pick <- list()
+```
+
+#### **AND** (`&`): {-}
+
+   * For those who are "Male" **AND** lives in the "South", what are their ages?
+   
+```{r}
+# For those who are "Male": 
+pick$male <- gender == "Male"
+print(pick$male)
+
+# For those who lives in the "South:
+pick$south <- residence == "South"
+print(pick$south)
+```
+
+```{r}
+# For those who are "Male" 
+#   AND
+#   lives in the "South",
+pick$male_south <- 
+  pick$male & pick$south
+
+print(pick$male_south)
+
+# what are their ages?
+age[pick$male_south]
+```
+
+***
+#### **OR**(`|`) {-}
+
+For those who are "Male" **OR** lives in the "South", what are their ages?
+```{r}
+# For those who are "Male" 
+#   OR
+#   lives in the "South",
+pick$maleOsouth <- 
+  pick$male | pick$south
+
+print(pick$maleOsouth)
+
+# what are their ages?
+age[pick$maleOsouth]
+
+```
+
+***
+
+#### **Exclusive OR** (`xor`) {-}
+
+For those who are male or from south, but not both
+```{r}
+pick$maleXOsouth <-
+  xor(pick$male, pick$south)
+
+print(pick$maleXOsouth)
+```
+
+<figure>
+```{r, eval=T, echo=FALSE}
+teachDS::img_centering("img/venn.png", "100%")
+```
+<figcaption>Venn diagram: different logical operations and their colors </figcaption>
+</figure>
+
+```{r}
+color[pick$male]
+color[pick$south]
+color[pick$maleOsouth]
+color[pick$maleXOsouth]
+```
+
+***
+
+Other joint conditions:
+```{r}
+# For those who are male, but not from South
+pick$maleXsouth <- 
+  pick$male & !pick$south
+color[pick$maleXsouth]
+
+# For those who are neither male nor from south
+pick$XmaleXsouth <-
+  !pick$male & !pick$south
+color[pick$XmaleXsouth]
+```
+
+<div class="alert alert-info">
+This is for the logic frenzy. Logically speaking, 
+```
+NOT(NOT condition_1) # the same as
+condition_1
+```
+
+```{r}
+!(! pick$male) # the same as
+pick$male
+```
+
+***
+
+```
+NOT (condition_1 AND condition_2) # the same as
+(NOT condition_1 OR NOT condition_2)
+```
+
+```{r}
+!(pick$male & pick$south) # the same as
+!pick$male | !pick$south
+```
+
+***
+
+```
+NOT (condition_1 OR condition_2) # the same as
+(NOT condition_1 AND NOT condition_2)
+```
+
+```{r}
+!(pick$male | pick$south) # the same as
+!pick$male & !pick$south
+```
+
+</div>
+
+<div class="alert alert-info">
+`&` and `|` can be stretched to test more than 2 conditions.
+
+```{r}
+# test if all three conditions are met
+pick_condition1 & pick_condition2 & pick_condition3
+
+# test if any of the three conditions is met
+pick_condition1 | pick_condition2 | pick_condition3
+```
+
+</div>
+
+#### `any()` and `all()`
+
+In **Pick and Which** section, we learn that `[pick]` is a conditional retrieval that when attached to a vector is to answer a question like:
+
+  * For those who(se) ... (defined by `pick`), what are their ... values (defined by the object `[pick]` attached to)
+
+For those who are male, what are their ages.
+```{r}
+age[pick$male]
+```
+
+Sometimes, your question is like 
+
+  * Is there any male? 
+  
+  * Are all of them male? 
+  
+`pick$male` carries all the information needed to answer the question--no conditional retrieval needed.
+
+The way to answer those two question is to use `any()` and `all()`
+
+```{r}
+any(pick$male)
+all(pick$male)
+```
+
+  * `any()`: any of those are ...?
+  
+  * `all()`: all of those are ...?
+
+<div class="alert alert-warning">
+When `NA` is in your pick, be aware:
+```{r}
+pick2 <- c(T, T, NA)
+any(pick2)
+all(pick2)
+```
+</div>
+<br>
+<div class="exercise">
+Get `fraud$data` from exercise 2 in Exercise section. The following questions exclude any `NA`.
+
+  1. Convert 通報日期 to a date class. Is there any `NA` after conversion?
+
+```{r, echo=F}
+fraud <- readRDS("data/fraud.Rds")
+fraud$data$通報日期 |>
+  lubridate::ymd() ->
+  fraud$data$通報日期
+
+fraud$data$通報日期 |> 
+  is.na() |>
+  any()
+```
+
+  2. How many LINE accounts were reported as a fraud after 2018 (i.e. starting from 2019-01-01)? 
+```{r, echo=FALSE}
+fraud$data$通報日期 |> range(na.rm=T)
+library(magrittr)
+fraud$data$通報日期 %<>%
+  lubridate::ymd()
+
+pick <- list()
+pick$notNA <-
+  !is.na(
+    fraud$data$通報日期
+  )
+pick$after20190101 <-
+  fraud$data$通報日期 >=
+  lubridate::ymd("20190101") & 
+  pick$notNA
+
+sum(pick$after20190101)
+```
+  
+  3. How many LINE accounts were reported as a fraud between year 2019 and 2020? 
+
+```{r, echo=FALSE}
+pick$before20201231 <- 
+  fraud$data$通報日期 <=
+  lubridate::ymd("20201231") &
+  pick$notNA
+
+pick$between2019_2020 <-
+  pick$after20190101 & pick$before20201231
+
+sum(pick$between2019_2020)
+```
+
+</div>
+
+### Common situations on different vectors
+
+#### Character vector{-}
+
+##### multiple hobbies{-}
+
+```{r}
+hobby = c(
+  'sport, reading, movie',
+  'sport',
+  'movie, sport, reading',
+  'movie, Reading',
+  'sport')
+
+```
+
+  * Who likes to read?
+  
+  * Count for each hobby.
+
+***
+
+  * to detect: who likes to read?
+  
+```{r}
+# any one likes to read
+stringr::str_detect(hobby, "reading") # 4th is FALSE
+stringr::str_detect(hobby, coll("reading", ignore_case = T)) # 4th is TRUE
+
+```
+
+<div class="exercise">
+In `johnDoe` data, 
+
+```{r, echo=FALSE}
+johnDoe <- list()
+johnDoe$source[[1]] <- "https://www.moj.gov.tw/2204/2771/2773/76135/post"
+johnDoe$source[[2]] <- "https://docs.google.com/spreadsheets/d/1g2AMop133lCAsmdPhsH3lA-tjiY5fkGIqXqwdknwEVk/edit?usp=sharing"
+googlesheets4::read_sheet(
+  johnDoe$source[[2]]
+) -> johnDoe$data
+```
+
+  1. Find the subsample of those whose report unit (通報機關名稱) has the term "海巡隊" (i.e. detect "海巡隊") in its name. 
+
+```{r, echo=FALSE}
+pick <- stringr::str_detect(
+  johnDoe$data$通報機關名稱, "海巡隊")
+
+subsample <- johnDoe$data[pick, ]
+```
+
+  2. How many different different 海巡隊 are there? Each reported how many dead bodies. 
+
+```{r, echo=FALSE}
+subsample$通報機關名稱 |> table() |> View()
+```
+
+
+</div>
+
+***
+
+  * to split: count for each hobby
+
+```{r}
+# Count for each hobby
+table(hobby)
+
+unlisted_hobbies <- {
+  hobby |> 
+    stringr::str_split(", ") -> list_hobbies
+  
+  unlist(list_hobbies)
+}
+table(unlisted_hobbies)
+```
+
+##### glue ymd{-}
+
+```{r}
+df_dates =
+  data.frame(
+    year = c('2001','2001','2002','2001','2001'),
+    month = c('4','10','1','1','4'),
+    day = c('3','3','22','18','3')
+  )
+
+```
+
+  * Create a date class vector.
+
+***
+
+
+  * to glue
+
+```{r}
+
+chr_dates <- paste(df_dates$year, df_dates$month, df_dates$day)
+chr_dates 
+dates <- lubridate::ymd(chr_dates)
+dates
+```
+
+<div class="exercise">
+In `johnDoe` data set,
+
+  1. Add a column called `發現日期` to `johnDoe$data` which is a date class vector.
+
+```{r, echo=FALSE}
+johnDoe$data$發現年 |> class()
+.discovered_date <- paste(
+  johnDoe$data$發現年+1911,
+  johnDoe$data$發現月,
+  johnDoe$data$發現日) |> lubridate::ymd()
+johnDoe$data$發現日期 <- .discovered_date
+
+```
+
+  2. How many dead bodies have no discovered dates?
+
+```{r, echo=FALSE}
+johnDoe$data$發現日期 |> is.na() |> sum()
+```
+
+  3. Which month has the highest report number?
+
+```{r, echo=FALSE}
+johnDoe$data$發現月 |> table() -> .tb_monthCount
+.tb_monthCount |> View()
+names(.tb_monthCount)[which(.tb_monthCount == max(.tb_monthCount))]
+.tb_monthCount[7]
+```
+
+</div>
+
+#### Factor vector{-}
+
+```{r}
+students <-
+  data.frame(
+    major = c('economics','sociology','economics','sociology','sociology','finance','sociology','statistics','statistics','sociology'),
+    year= c(4,1,4,3,1,4,4,2,1,3),
+    credits= c(16,13,10,21,17,12,21,15,20,17)
+  )
+```
+
+##### Which school?{-}
+
+```{r}
+students$major 
+```
+
+
+  * define a new categorical vector based on a categorical vector.
+
+***
+
+**Pick-and-assign**
+
+```{r}
+school = ""
+
+{
+  # For those whose major is economics or sociology, their school is social science. 
+  pick_those = students$major %in% 
+    c("economics", "sociology")
+  school[pick_those] = "social science"
+  
+  # For those whose major is statistics or finance, their school is business
+  pick_those = students$major %in% 
+    c("statistics", "finance")
+  school[pick_those] = "business"
+}
+
+school
+```
+
+***
+
+**factor-relevels**
+
+```{r}
+school = factor(students$major)
+
+{
+  levels(school) <- 
+    c("social science","business","social science","business")
+  
+  school
+}
+
+school
+```
+
+<div class="exercise">
+
+In `johnDoe` data set, 
+
+  1. create a factor column called `發現季節` with levels, "spring", "summer", "fall" and "winter. They cover months 3-5 (for spring), 6-8 (for summer), 9-11 (for fall), and 12-2 (for winter)
+
+```{r, echo=FALSE}
+.season <- johnDoe$data$發現月 |> factor()
+levels(.season) <-
+  c(
+    rep("winter", 2),
+    rep("spring", 3),
+    rep("summer", 3),
+    rep("fall", 3),
+    "winter"
+  )
+johnDoe$data$發現季節 <- .season
+```
+
+  2. In each season, how many dead bodies were discovered?
+
+```{r, echo=FALSE}
+johnDoe$data$發現季節 |> table() 
+
+johnDoe$data$發現季節 <- 
+  factor(johnDoe$data$發現季節,
+    levels=c("spring","summer","fall", "winter"))
+johnDoe$data$發現季節 |> table()
+```
+
+
+</div>
+
+##### Workload?{-}
+
+```{r}
+students$credits
+```
+
+  * credits: <= 12 (light), 13-20 (normal), 20+ (heavy)
+
+***
+
+  * divide numeric vector into groups
+  
+```{r}
+## step 1. create cut points vector (each point is maximal value of a group)
+maximalValues <- c(0, 12, 20, 30) # throw in a lowest value (0)
+```
+
+  * light: maximal value is 12
+    normal: maximal value is 20
+    heavy: maximal value is some large number 50
+
+```{r}
+## step 2: cut students$credits with maximalValues cut points
+cut(
+  students$credits, 
+  maximalValues) -> students$load
+```
+
+
+```{r}
+## step 3(optional): using regroup skill to rename levels
+levels(students$load) <- c("light", "normal", "heavy")
+```
+
+<figure>
+<figcaption> cut points `c(0, 12, 20, 30)` </figcaption>
+```{r, eval=T, echo=FALSE}
+teachDS::img_centering("img/cut.png")
+```
+</figure>
+
+<div class="alert alert-info">
+If you want to include the lowest cut point (i.e. `0`):
+
+```{r}
+cut(
+  students$credits, 
+  maximalValues,
+  include.lowest = TRUE
+  ) -> students$load
+levels(students$load)
+```
+
+
+</div>
+
+
+## Summarise one vector
+
+#### class check, table and the basics{-}
+
+```{r}
+dates <- c('2016-11-15','NA','NA','1997-05-07','1995-08-25','2002-09-20','NA','NA','NA','1995-07-16', '2011-06-22')
+grades <- c(29,53,26,27,55,69,NA,NA,63,NA,56)
+genders <- c('Male','Female','Male','Male','Female','Female',NA,'Male','Male','Female','Female')
+majors <- c('economics','economics',NA,'economics','economics','economics','economics','statistics','law','economics','law')
+```
+
+  * Does it have the right class? Right class facilitates your work later.
+  
+```{r}
+dates |> class()
+dates |> lubridate::ymd() -> dates
+dates |> class()
+```
+
+Social scientists summarise data features one by one as their starting analysis step frequently. The summary is usually about:
+
+  * Is there `NA`s? If yes, how many? 
+
+```{r}
+analysis <- list()
+anyNA(dates)
+dates |> is.na() |> sum() -> analysis$dates$na$sum
+anyNA(grades)
+grades |> is.na() |> sum() -> analysis$grades$na$sum
+```
+
+If the feature is a numeric type:
+
+  * What is the `range` of the feature?
+  
+  * What is its `mean` and `median`?
+
+```{r}
+dates |> range()
+dates |> range(na.rm=T) -> analysis$dates$range
+grades |> range(na.rm=T) -> analysis$grades$range
+grades |> median(na.rm=T) -> analysis$grades$mdian
+grades |> mean(na.rm=T) -> analysis$grades$mean
+```
+  
+If the feature is a factor: 
+
+  * What are its possible levels? (`levels`, `unique`, `table`)
+  
+  * How many observations in each level? (`table`)
+
+  * How many types? `unique()`
+  
+  * Count in each type: `table()`
+
+```{r}
+genders |> class()
+genders |> factor() -> genders
+
+genders |> levels() # only works for factor
+genders |> unique() # returns a vector, data frame or array like x but with duplicate elements/rows removed.
+```
+
+<div class="alert alert-info">
+Duplicated inputs:
+
+```{r}
+dataSet0 <- 
+  data.frame(
+    dates = c('2016-11-15','1997-05-07','NA','NA','1997-05-07','1995-08-25','2002-09-20','NA','NA','NA','1995-07-16', '2011-06-22', '2016-11-15'),
+    grades = c(29,27, 53,26,27,55,69,NA,NA,63,NA,56, 29),
+    genders = c('Male','Male', 'Female','Male','Male','Female','Female',NA,'Male','Male','Female','Female','Male'),
+    majors = c('economics','economics', 'economics',NA,'economics','economics','economics','economics','statistics','law','economics','law','economics')
+)
+```
+
+There are duplicated records. Where are they? 
+
+```{r}
+View(dataSet0)
+whichIsDuplicated <- which(duplicated(dataSet0))
+dataSet0[whichIsDuplicated, ]
+```
+
+We can use `unique()` to clear up duplicated records:
+```{r}
+dataSet0 <- unique(dataSet0)
+dataSet0 |> duplicated() |> which()
+View(dataSet0)
+```
+
+</div>
+
+```{r}
+# na is removed before table summarisation
+genders |> table()
+# preliminary summary should include NA summary
+genders |> table(useNA = "always") -> analysis$genders$table
+analysis$genders$table
+```
+
+
+> Summarise **genders**: There are `length(genders)` observations. Among them, 5 are female and 5 are male. One person has missing gender value (see `analysis$genders$table`).
+
+<div class="exercise">
+Summarise **majors**.
+</div>
+<br>
+<div class="exercise">
+Obtain `wdi` object from exercise 5 of the Exercise section. The following questions focus **only** on year 2000 (which means all the following questions implicitly start with the expression, **for those from year 2000**.)
+
+```{r, echo=F}
+data2000 <- wdi$data |> subset(year==2000)
+View(data2000)
+```
+
+  1. How many observations are there?
+  
+  2. The followings are `iso2c` values that represent a **region** but not a country. Take a subsample that excludes those **region** (i.e. a subsample that consists of countries),
+
+```{r}
+iso2c_nonCountry <- c('ZH','ZI','1A','S3','B8','V2','Z4','4E','T4','XC','Z7','7E','T7','EU','F1','XE','XD','XF','ZT','XH','XI','XG','V3','ZJ','XJ','T2','XL','XO','XM','XN','ZQ','XQ','T3','XP','XU','XY','OE','S4','S2','V4','V1','S1','8S','T5','ZG','ZF','T6','XT','1W')
+```
+  
+```{r, echo=F}
+data2000 |> subset(!(iso2c %in% iso2c_nonCountry)) -> 
+  subsample2000
+View(subsample2000)
+```
+
+The following questions focus on the subsample. 
+
+  3. How many countries are there?
+
+```{r, echo=FALSE}
+subsample2000$country |> unique() |> length()
+subsample2000$country |> length()
+```
+
+
+  4. Regarding **Energy use (kg of oil equivalent per capita)**. Complete the following summary:
+
+> For Energy use (kg of oil equivalent per capita), there are ... observations with ... missing values. Excluding missing values, the range of energy use is between ... and ... kg/per capita of oil equivalent with median usage of ... and mean usage of ... .
+
+The `wdi$data`'s feature meanings (other than iso2c, year, and country) can be found at:
+```{r}
+browseURL(wdi$meta)
+```
+
+
+```{r, echo=F}
+analysis2 <- list()
+View(subsample2000)
+.series <- subsample2000$EG.USE.PCAP.KG.OE
+.series |>
+  is.na() |> sum() -> .na
+.series
+.series |> range(na.rm=T) -> .range
+.series |> mean(na.rm=T) -> .mean
+.series |> median(na.rm=T) -> .median
+
+featureXsummary <- 
+  list(
+    total_obs = length(.series),
+    missing_value_count=.na,
+    range=list(.range),
+    mean= .mean,
+    median=.median
+  )
+analysis2$summaryByFeature$`Energy use (kg of oil equivalent per capita)`$description <- featureXsummary |> list2DF()
+
+analysis2$summaryByFeature$`Energy use (kg of oil equivalent per capita)`$description 
+
+# saveRDS(analysis2, "data/analysis2.Rds")
+```
+
+</div>
+
+## Exercise
+
+### 1. John Doe{-}
+
+Data source: <https://www.moj.gov.tw/2204/2771/2773/76135/post> 
+
+```{r}
+johnDoe <- list()
+johnDoe$source[[1]] <- "https://www.moj.gov.tw/2204/2771/2773/76135/post"
+johnDoe$source[[2]] <- "https://docs.google.com/spreadsheets/d/1g2AMop133lCAsmdPhsH3lA-tjiY5fkGIqXqwdknwEVk/edit?usp=sharing"
+googlesheets4::read_sheet(
+  johnDoe$source[[2]]
+) -> johnDoe$data
+```
+
+```{r, echo=FALSE}
+saveRDS(johnDoe, file="data/johnDoe.Rds")
+```
+
+
+```{r, echo=F}
+jd <- johnDoe$data
+{
+  jd |> View()
+  # 常見縣市, 月份
+  tb <- list()
+  jd$發現縣市 |> table() -> tb$county
+  jd$發現月 |> table() -> tb$month
+  
+  # 依數目多寡
+  tb$county |> names()
+  tb$county |> sort(decreasing=T) -> tb$county
+  tb$county
+  
+  tb$month |> sort(decreasing = T) -> tb$month
+  tb$month
+  
+  # 判斷
+  ## 海域
+  whichIs <- list()
+  pick <- list()
+  jd$發現地址 |> stringr::str_detect("海") -> pick$fromOcean
+  jd$死於海域 <- pick$fromOcean
+  
+  # 描述
+  ## 死亡方式描詳
+  jd$死亡方式描述 |> table(useNA = "always") -> tb$typeOfDeath
+  tb$typeOfDeath |> sort(T) -> tb$typeOfDeath
+  tb$typeOfDeath
+  
+  # 分析: 判斷+描述
+  ## 死於海域是否都是自然死
+  
+  ### 判斷來自死於海域
+  pick$fromOcean
+  ### 描述死亡方式
+  tb$pick$fromOcean$typeOfDeath <- jd$死亡方式描述[pick$fromOcean] |> table(useNA="always")
+  tb$pick$fromOcean$typeOfDeath
+  
+  ## 不同死亡方式死於海、陸比例
+  
+  groupBy <- list()
+  groupBy$死亡方式.fromOcen <- grouping(jd$死亡方式描述, pick$fromOcean)
+  jd |> names()
+  jd[,c()]
+  jd$死亡方式描述 <- factor(jd$死亡方式描述, levels=names(tb$typeOfDeath))
+  jd$死亡方式描述 |> class()
+  jd$死於海域 |> as.factor() -> jd$死於海域 #|> class()
+  levels(jd$死於海域) <- c("陸地","海域")
+  table(jd$死亡方式描述 : jd$死於海域) -> tb$interact_typeOfDeath.deathInOcean
+  tb$interact_typeOfDeath.deathInOcean
+}
+
+```
+
+### 2. LINE fraud{-}
+
+```{r}
+fraud <- list()
+fraud$source[[1]] <- "https://data.gov.tw/dataset/78432"
+fraud$source[[2]] <- "https://data.moi.gov.tw/MoiOD/System/DownloadFile.aspx?DATA=7F6BE616-8CE6-449E-8620-5F627C22AA0D"
+fraud$data <- readr::read_csv(fraud$source[[2]])
+
+```
+
+```{r, echo=FALSE}
+saveRDS(fraud, file="data/fraud.Rds")
+```
+
+### 3. Drug{-}
+
+```{r}
+drug <- list()
+drug$source[[1]] <- 
+  "https://docs.google.com/spreadsheets/d/17ID43N3zeXqCvbUrc_MbpgE6dH7BjLm8BHv8DUcpZZ4/edit?usp=sharing"
+drug$data <- 
+  googlesheets4::read_sheet(
+    drug$source[[1]]
+  )
+```
+
+```{r, echo=FALSE}
+saveRDS(drug, file="data/drug.Rds")
+```
+
+### 4. Econ survey{-}
+
+```{r}
+econSurvey <- list()
+econSurvey$source[[1]] <- "https://docs.google.com/spreadsheets/d/1TtpiYpq_HjAHH3MJS20mZR3hb0oXDNCr6ybqmNjFFb8/edit?usp=sharing"
+econSurvey$data <- googlesheets4::read_sheet(
+  econSurvey$source[[1]]
+)
+```
+
+```{r,echo=F}
+saveRDS(econSurvey, file="data/econSurvey.Rds")
+```
+
+### 5. WDI{-}
+
+```{r}
+wdi <- list()
+wdi$source[[1]] <- "https://databank.worldbank.org/source/world-development-indicators#"
+wdi$source[[2]] <- "https://docs.google.com/spreadsheets/d/1XHxjE3DIIdvNL-kbLR_bktxiHxmk23S6lUmn89WEedM/edit?usp=sharing"
+wdi$meta <- "https://docs.google.com/spreadsheets/d/1C8b-liC8Gl9Kmkexb5uq1_TUIE3lYOt4PutPlOne80g/edit?usp=sharing"
+wdi$data <- googlesheets4::read_sheet(
+  wdi$source[[2]]
+)
+
+```
+

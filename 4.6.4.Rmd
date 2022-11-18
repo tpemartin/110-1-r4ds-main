@@ -1,0 +1,318 @@
+## 4.6.4 
+
+```{r}
+hobby = c(
+  'sport, reading, movie',
+  'sport',
+  'movie, sport, reading',
+  'movie, Reading',
+  'sport')
+```
+
+Who likes to read?
+
+```{r}
+hobby == "reading"
+'sport, reading, movie' == "sport, reading, movie"
+hobby %in% "reading"
+
+'sport, reading, movie' %in% "sport, reading, movie"
+```
+
+```{r}
+stringr::str_detect(
+  string, # 'sport, reading, movie'
+  pattern # 'reading'
+)
+```
+
+
+```{r}
+# any one likes to read
+stringr::str_detect(
+  hobby, # string
+  "reading" # pattern
+  ) # 4th is FALSE
+stringr::str_detect(
+  hobby, # string
+  stringr::coll("reading", ignore_case = T) # pattern
+  ) # 4th is TRUE
+```
+
+
+```{r}
+table(hobby)
+```
+
+```{r}
+stringr::str_split(
+  string, 
+  pattern
+)
+```
+
+```{r}
+hobby[[1]]
+```
+
+
+```{r}
+stringr::str_split(
+  hobby[[1]],
+  pattern= ", "
+) -> hobby1
+table(hobby1)
+
+stringr::str_split(
+  hobby[[2]],
+  pattern=", ")
+
+stringr::str_split(
+  hobby[1:2],
+  pattern=", "
+) -> hobby12
+class(hobby12)
+# table( an atomic vector)
+
+## turn a list into an atomic vector
+
+table(unlist(hobby12))
+```
+
+```{r}
+# Count for each hobby
+table(hobby)
+
+unlisted_hobbies <- {
+  hobby |> 
+    stringr::str_split(pattern=", ") -> list_hobbies
+  
+  unlist(list_hobbies)
+}
+table(unlisted_hobbies)
+```
+
+```{r}
+# any one likes to read
+pick_reading1 <- 
+stringr::str_detect(hobby, "reading") # 4th is FALSE
+pick_reading2 <- 
+stringr::str_detect(hobby, 
+  stringr::coll("reading", ignore_case = T)) # 4th is TRUE
+```
+
+```{r}
+pick_reading2
+which(pick_reading2)
+```
+
+
+```{r}
+unlisted_hobbies
+toupper(unlisted_hobbies) |> table()
+tolower(unlisted_hobbies) |> table()
+```
+
+***
+
+```{r}
+df_dates =
+  data.frame(
+    year = c('2001','2001','2002','2001','2001'),
+    month = c('4','10','1','1','4'),
+    day = c('3','3','22','18','3')
+  )
+```
+
+```{r}
+df_dates$year
+df_dates$month
+df_dates$day
+
+df_dates$date <- lubridate::ymd(c(
+  "2001 4 3", "2001 10 3", "2002 1 22", "2001 1 18", "2001 4 3"
+))
+
+df_dates$date |> class(
+  
+)
+```
+
+```{r}
+chr_dates <- paste(
+  df_dates$year, # of the same length
+  df_dates$month, 
+  df_dates$day,
+  sep="-")
+chr_dates 
+dates <- lubridate::ymd(chr_dates)
+dates |> class()
+```
+
+### factor vector
+
+```{r}
+students <-
+  data.frame(
+    major = c('economics','sociology','economics','sociology','sociology','finance','sociology','statistics','statistics','sociology'),
+    year= c(4,1,4,3,1,4,4,2,1,3),
+    credits= c(16,13,10,21,17,12,21,15,20,17)
+  )
+```
+
+  * school (學院)
+
+```{r}
+students$major |> unique()
+students$major
+
+school <- character(10)
+school[c(1, 2, 3, 4, 5, 7, 10)] <- "scocial science"
+school[c(6, 8, 9)] <- "business"
+school
+```
+
+```{r}
+school = character(10)
+
+{
+  # For those whose major is economics or sociology, their school is social science. 
+  pick_those = students$major %in% 
+    c("economics", "sociology")
+  school[pick_those] = "social science"
+  
+  # For those whose major is statistics or finance, their school is business
+  pick_those = students$major %in% 
+    c("statistics", "finance")
+  school[pick_those] = "business"
+}
+
+school
+```
+
+```{r}
+school = factor(students$major)
+
+{
+  levels(school) <- 
+    c("social science","business","social science","business") # RHS and LHS of <- must have the same length
+  
+  school
+}
+
+school
+```
+
+```{r}
+students$year
+
+students$year <- factor(students$year)
+students$year
+
+levels(students$year) <- c(
+  "freshman", "sophemore",
+  "junior", "senior"
+)
+
+students$year
+```
+
+numerical vector into a categorical vector based on some interval definitions
+
+```{r}
+students$credits
+```
+
+credits: <= 12 (light), 13-20 (normal), 20+ (heavy)
+
+```{r}
+workload <- character(10)
+
+workload[c(3, 6)] <- "light"
+workload[c(1, 2, 5, 8, 9, 10)] <- "normal"
+workload[c(4, 7)] <- "heavy"
+workload
+```
+
+```{r}
+workload <- character(10)
+
+pick_those = students$credits <= 12
+workload[pick_those] = "light"
+
+pick_those = (students$credits >= 13) | (students$credits <= 20)
+workload[pick_those] = "normal"
+
+pick_those = students$credits > 20
+workload[pick_those] = "heavy"
+
+workload
+```
+
+```{r}
+workload <- factor(students$credits)
+
+levels(workload) <- c(rep("light", 2), rep("normal", 5), "heavy")
+ 
+workload
+```
+
+  * credits: <= 12 (light), 13-20 (normal), 20+ (heavy)
+  
+  * light: 12, normal: 20, heavy: 30
+
+```{r}
+maximalValues <- c(0, 12, 20, 30)
+workload <-
+  cut(
+    students$credits, # a numerical vector
+    maximalValues # cut points
+  )
+workload # already a factor
+students$credits
+
+levels(workload) <- c("light", "normal", "heavy")
+
+workload
+students$credits
+
+```
+
+```{r}
+credits2 <- c(0, students$credits)
+credits2
+cut(
+  credits2,
+  maximalValues
+)
+```
+
+```{r}
+cut(
+  credits2,
+  maximalValues,
+  include.lowest = T
+) -> workload
+levels(workload) <- c("light", "normal", "heavy")
+workload
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

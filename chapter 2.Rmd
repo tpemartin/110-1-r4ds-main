@@ -1,0 +1,401 @@
+---
+title: "Oct. 6"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Basic data type
+
+Singleton
+
+
+## Collection of values
+
+### Atomic vector
+
+```{r}
+c("John", "Mary")
+```
+
+### list (vector)
+
+```{r}
+list()
+list("John", 178, TRUE)
+```
+
+```{r}
+typeof("John")
+typeof(c("John", "Mary"))
+typeof(list("John", 178, TRUE))
+```
+
+```{r}
+list("John", 5, TRUE)
+```
+
+```{r}
+list("John",42, list("Mary", 35)) # big list (a nested list)
+```
+
+
+element values of the above list:
+
+```{r}
+"John" 
+42
+"Mary" # is not an elment value of the list
+35 # is not an element value of the list
+```
+
+```{r}
+"John"
+42
+list("Mary", 35)
+```
+
+## 2.8
+
+```{r}
+c("John", "Mary")[[1]]
+```
+
+
+```{r}
+c("John", "Mary")[[2]]
+```
+
+```{r}
+list("John", 178, TRUE)[[1]] # "John"
+list("John", 178, TRUE)[[2]] # 178
+list("John", 178, TRUE)[[3]] # TRUE
+```
+
+
+```{r}
+list("John",42, list("Mary", 35))
+```
+
+```{r}
+"John" # 1
+42 # 2
+list("Mary", 35) #3
+```
+
+
+```{r}
+list("John",42, list("Mary", 35))[[3]]
+```
+
+## 2.9
+
+```{r}
+personName = c("John", "Mary")
+interestingNumber = c(2, 3.1412)
+covidPositive = c(TRUE, TRUE, F)
+```
+
+```{r}
+personName = c("John", "Mary") # binding
+personName # call name
+```
+
+```{r}
+personName = c("John", "Mary") 
+personName <- c("John", "Mary") 
+c("John", "Mary") -> personName
+```
+
+### Chained extraction operations
+
+[[]]
+[]
+$
+
+[,]
+
+```{r}
+bigList <- list("John",42, list("Mary", 35))
+```
+
+
+```{r}
+bigList[[3]][[2]]
+```
+  
+   * There is a call to bigList
+
+```{r}
+list("John",42, list("Mary", 35))[[3]][[2]]
+```
+
+   *
+Resolve First
+```{r}
+list("John",42, list("Mary", 35))[[3]]
+```
+
+```{r}
+list("Mary", 35)[[2]]
+```
+
+```{r}
+list("John", 42, 
+  list("Mary", 35,
+    c(1, 22, 53))
+  )[[3]][[3]][[2]]
+```
+
+take out 22
+
+  * [[3]] extract 
+  
+```{r}
+list("Mary", 35,
+    c(1, 22, 53))[[3]]
+```
+
+  * [[3]] extract
+
+```{r}
+c(1, 22, 53)[[2]]
+```
+
+  * [[2]] extract
+  
+```{r}
+22
+```
+
+
+
+```{r}
+list(
+  "John", 
+  42, 
+  list(
+    "Mary", 
+    35,
+    c(
+      1, 
+      22, 
+      53))
+  )
+
+```
+
+
+## 2.10
+
+```{r}
+list("a", list(1, 2), TRUE)
+```
+
+
+```{r}
+c(c("a", "b"), "c")
+```
+"a" "b" "c"
+```{r}
+c("a", "b", "c")
+```
+
+```{r}
+c(c("a", "b"), c("c", "d"))
+```
+
+  * "a" "b" "c" "d"
+  
+```{r}
+c("a", "b", "c", "d")
+```
+```{r}
+c(c("a", "b"), c("c", "d"))
+```
+
+extract "d"
+
+```{r}
+c(c("a", "b"), c("c", "d"))[[2]][[2]]
+```
+```{r}
+c("a", "b", "c", "d")[[4]]
+```
+
+```{r}
+list(c("a", "b"), c("c", "d"))[[2]][[2]]
+```
+
+list respects element values structure
+
+c however will break down vector if it sees one.
+
+```{r}
+c(list("a", 1), list("c", 2))
+```
+
+  * "a", 1, "c", 2
+
+
+```{r}
+c("a", 1, "c", 2)
+```
+Coercion
+1
+3
+2
+```{r}
+1 + 2
+"1" +2
+'Martin' + 2
+```
+
+## 2.12
+
+Four features
+
+  * age, gender, residence, income
+
+### Obo
+
+(1) 54 male north 100
+
+```{r}
+age = 54
+gender = "male"
+residence = "north"
+incomes = 100
+```
+
+```{r}
+A <- list(54,"male","north",100)
+```
+
+(2) 32 female south 25
+
+
+```{r}
+age = 54
+gender = "male"
+residence = "north"
+incomes = 100
+
+age = 32
+gender = "female"
+residence = "south"
+incomes = 25
+```
+
+```{r}
+A <- list(54,"male","north",100)
+B <- list(32, "female", "south", 25)
+C <- list(28, "female", "east", NA)
+D <- list(20, "male", "east", 77)
+```
+
+  * Not Available
+
+
+Data set 
+```{r}
+data_set <- list(A, B, C, D)
+```
+
+```{r}
+data_set
+```
+
+
+
+
+Ex 2.2
+ 
+ * list(54, ..., 100): 54, "male", "north, 100
+ 
+ * list(32, ..., 25): 23, "female", ..."25
+
+```{r}
+c(
+  list(54, "male", "north", 100), # (1)
+  list(32, "female", "south", 25), # (2)
+  list(28, "female", "east", NA), # (3)
+  list(20, "male", "east", 77) # (4)
+)
+```
+
+(程式測試，請忽略)
+```{r}
+list(54, "male", "north", 100, 
+  32, "female", "south", 25,
+  28, "female", "east", NA, 
+  20, "male", "east", 77) 
+```
+
+
+
+### Misc
+
+
+```{r}
+54
+male # name call. R will find what the name represents
+
+```
+
+
+```{r}
+age = 54
+gender = "male"
+residence = "north"
+incomes = 100
+```
+
+```{r}
+gender <- "Male"
+residence -> "north"
+income -> 100
+age -> 54
+```
+
+```{r}
+gender <- "Male"
+gender = "Male"
+```
+
+```{r}
+gender -> "Male"
+"Male" = gender
+Male = gender
+```
+
+
+
+```{r}
+gender # name call
+gender = "male" # binding
+gender <- "male" # binding
+gender -> "Male"
+```
+
+```{r}
+gender -> "Male"
+```
+
+I call the value of the name (gender) represents, and bind the value to the name called ("Male")
+```{r}
+"gender" -> "Male"
+"gender" -> Male
+Male = "gender"
+```
+
+Value always stay at the tail of an arrow
+
+<- tail
+
+tail -> 
+
+
+
+
+

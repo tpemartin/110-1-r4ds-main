@@ -1,0 +1,67 @@
+
+Replacement should always respect the structure of its retrieval:
+
+```{r}
+concerts_obo <-
+  jsonlite::fromJSON("https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17", simplifyDataFrame = F)
+
+```
+
+If you plan to do:
+```{r}
+NewConcerts_obo <- concerts_obo
+NewConcerts_obo[[3]]$showInfo[["time"]] <- "2022/01/31 19:30:00"
+```
+
+1. check retrieval structure:
+```{r}
+NewConcerts_obo <- concerts_obo
+NewConcerts_obo[[3]]$showInfo[["time"]]
+# it is NULL, meaning nothing to be replaced. Therefore, wrong retrieval. 
+```
+
+***
+
+Another example, if you plan to do:
+```{r}
+NewConcerts_obo <- concerts_obo
+NewConcerts_obo[[3]]$showInfo[[1]]["time"]="2022/01/31 19:30:00"
+```
+
+1. check retrieval
+```{r}
+NewConcerts_obo[[3]]$showInfo[[1]]["time"]
+# which is the same as
+list(
+  time="2021/12/25 19:30:00"
+)
+```
+
+2. Follow the retrieval structure but use correct information:
+```{r}
+NewConcerts_obo[[3]]$showInfo[[1]]["time"] = 
+  list(
+    time="2022/01/31 19:30:00"
+  )
+```
+
+***
+3rd example. If you plan to do:
+
+```{r}
+NewConcerts_obo <- concerts_obo
+NewConcerts_obo[[3]][["showInfo"]][[1]][["time"]] = "2022/01/31 19:30:00"
+```
+
+1. check retrieval:
+```{r}
+NewConcerts_obo <- concerts_obo
+NewConcerts_obo[[3]][["showInfo"]][[1]][["time"]]
+# result is a character
+```
+
+2. Follow the retrieval structure but use correct information:  
+```{r}
+NewConcerts_obo[[3]][["showInfo"]][[1]][["time"]] = "2022/01/31 19:30:00"
+```
+

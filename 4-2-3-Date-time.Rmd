@@ -1,0 +1,112 @@
+### 4.2.3 Date/Time 
+
+```{r}
+install.packages("lubridate")
+```
+
+```{r}
+lubridate::ymd(c("2021/10/30", "2021-10-30", "2021 October 30", "2021 Oct. 30"))
+lubridate::ydm(c("2021/30/10", "2021-30-10", "2021 30 October", "2021 30 Oct."))
+lubridate::mdy(c("10/30/2021", "10-30-2021", "October 30, 2021", "Oct. 30, 2021"))
+lubridate::dmy(c("30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"))
+```
+
+```{r}
+dayInfo <- list()
+dayInfo$ymd <- c("2021/10/30", "2021-10-30", "2021 October 30", "2021 Oct. 30")
+class(dayInfo$ymd)
+lubridate::ymd(dayInfo$ymd) ->
+  dayInfo$ymd_parsed
+```
+
+```{r}
+commonClasses <- list()
+
+# save three different atomic vectors
+commonClasses$character <- c("John", "Mary", "Bill")
+commonClasses$numeric <- c(2.3, 4, 7)
+commonClasses$logical <- c(TRUE, T, F, FALSE)
+```
+
+```{r}
+# A parsed date data has Date class.
+commonClasses$date <- lubridate::dmy(c("30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"))
+class(commonClasses$date)
+```
+
+"2021/10/30 13:22:52"
+
+  * day style: ymd
+  * time style: hms
+
+```{r}
+lubridate::ymd_hms(
+  "2021/10/30 13:22:52",
+  tz="Asia/Taipei"
+) -> dateTime_taipei
+
+dateTime_taipei
+```
+
+```{r}
+dateTime_taipei <- 
+  lubridate::ymd_hms(
+    c("2021/10/30 13:22:52", "2021-10-31 1:22:52PM"),
+    tz = "Asia/Taipei")
+dateTime_taipei
+```
+
+```{r}
+dateTime_london <- 
+  lubridate::mdy_hm(
+    c("October 30, 2021, 23:10", "Oct. 30, 2021 11:10PM"),
+    tz="Europe/London")
+dateTime_london
+```
+
+
+```{r}
+c(
+  dateTime_taipei, # name call on dateTime_taipei
+  dateTime_london # name call on dateTime_london
+) # can form an atomic vector since they share the same class.
+```
+
+```{r}
+commonClasses$date_time <- c(
+  dateTime_taipei,
+  dateTime_london
+)
+class(commonClasses$date_time)
+```
+
+```{r}
+dateTime_london # name call on dateTime_london
+dateTime_london_atTaipei <-
+  lubridate::with_tz(
+    dateTime_london, # must be a date/time class
+    tz="Asia/Taipei"
+  )
+dateTime_london
+dateTime_london_atTaipei
+```
+
+```{r}
+lubridate::with_tz(
+  c("October 30, 2021, 23:10", "Oct. 30, 2021 1:10AM"),
+  tz="Asia/Taipei"
+)
+
+lubridate::with_tz(
+  c("John", "Mary"),
+  tz="Asia/Taipei"
+)
+```
+
+```{r}
+vimeo::get_myVideoData()
+vm <- vimeo::vimeoService_create()
+library(dplyr)
+vm$get_showcaseVideos(uri="https://vimeo.com/showcase/8857547") -> vm$showcase
+```
+

@@ -1,0 +1,852 @@
+```{r, echo=FALSE, eval=TRUE}
+klippy::klippy()
+```
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = T, eva=F)
+```
+
+# Element Values
+
+```{r, echo=FALSE, eval=TRUE}
+klippy::klippy()
+```
+
+## More on list
+
+When we use `list()`, it is like we are making a list. There are two types of list.
+
+-   non-labelled items
+-   Labelled items
+
+------------------------------------------------------------------------
+
+Shopping list (non-labelled items)
+
+1.  milk
+
+2.  apple
+
+3.  pork
+
+Here 1, 2 and 3 are not their label. It simply represents the position of the item on the shopping list, which is like the position of element value in a list.
+
+It is like
+
+```{r}
+list(
+  "milk", 
+  "apple", 
+  "pork"
+)
+```
+
+------------------------------------------------------------------------
+
+My enrolled course list (labelled list)
+
+-   Compulsory
+
+    -   Principle of Economics,
+
+    -   Calculus,
+
+    -   Accounting
+
+-   Selective
+
+    -   Philosophy,
+
+    -   Chinese Literature
+
+It is like
+
+```{r}
+list(
+  Compulsory = 
+    c("Principle of Economics", 
+      "Calculus", 
+      "Accounting"),
+  Selective = 
+    c("Philosophy", 
+      "Chinese Literature")
+)
+```
+
+------------------------------------------------------------------------
+
+When we make a list it can be nested, like a concert event:
+
+-   name
+
+    -   **Gianandrea Noseda conducts Schumann and Mendelssohn --- With Mikhail Pletnev**
+
+-   time
+
+    -   2021, Oct, 01
+
+-   Program
+
+    -   Robert Schumann, Piano Concerto in A Minor, Op. 54
+
+    -   Felix Mendelssohn-Bartholdy, Symphony No. 4 in A Major, Op. 90, "Italian"
+
+```{r}
+list(
+  name="Gianandrea Noseda conducts Schumann and Mendelssohn — With Mikhail Pletnev",
+  time="2021, Oct, 01",
+  program=list(
+    "Robert Schumann, Piano Concerto in A Minor, Op. 54",
+    "Felix Mendelssohn-Bartholdy, Symphony No. 4 in A Major, Op. 90, Italian"
+  )
+)
+```
+
+When there are several concerts, the list can look like
+
+1.  
+
+    -   name
+
+    -   time
+
+    -   program
+
+2.  
+
+    -   name
+
+    -   time
+
+    -   program
+
+Here the numbers indicate the position of element value. As a list, it would be like:
+
+```{r}
+list(
+  list(
+    name="name1",
+    time="time1",
+    program=list(
+      "music1",
+      "music2"
+    )
+  ),
+  list(
+    name="name2",
+    time="time2",
+    program=list(
+      "musicA",
+      "musicB"
+    )
+  )
+)
+```
+
+::: {.exercise}
+How would you store the following lists:
+
+1.  Shopping list: egg x 2 dozens, milk x 1L, vegetable x 2 kinds.
+2.  Make a list of two courses your take this semester with course name, time, and place
+:::
+
+------------------------------------------------------------------------
+
+### JSON data
+
+JSON (Javascript Object Notation) is the most common data format that transmit across internet.
+
+```{r}
+browseURL("https://data.gov.tw/dataset/6013")
+
+```
+
+```{r}
+install.packages("jsonlite")
+```
+
+::: {.alert .alert-info}
+To use a function from a package, we can use `::` to use the function:
+
+```{r, eval=F}
+package_name::function_name
+```
+:::
+
+```{r}
+# Observation by observation
+concerts_obo <-
+  jsonlite::fromJSON("https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17", simplifyDataFrame = F)
+
+# Feature by feature
+concerts_fbf <-
+  jsonlite::fromJSON("https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17", simplifyDataFrame = T)
+```
+
+-   `fromJSON` can take both an URL or a file path of a .json file
+
+-   `simplifyDataFrame` controls importing a json data source observation-by-observation (F) or feature-by-feature (T).
+
+    -   Feature by feature data set is called a **data frame**.
+
+------------------------------------------------------------------------
+
+**concerts_obo**:\
+Take the first observation as an example. Its list is like:
+
+-   version: 1.4
+
+-   UID: 5f96275fd083a34ec4da005b
+
+-   title: 2021爛泥發芽高雄場 【我就爛 ! 泥發財 !】
+
+-   category: 17
+
+-   showInfo:
+
+    1.  
+
+        -   time
+
+        -   location
+
+        -   locationName
+
+        -   :
+
+        -   endTime
+
+**concerts_fbf**
+
+```{r}
+View(concerts_fbf)
+```
+
+------------------------------------------------------------------------
+
+A lot of things in the universe can be recorded in human language, especially computer language. Taking **Programming for Data Scient** is like taking the red pill in the move **Matrix**. This is what you will see the world eventually -- only if the red pill does not kill you.
+
+```{r eval=T, echo=FALSE}
+teachDS::img_centering("https://i.insider.com/52ceb892eab8ea717bd0243b?width=600&format=jpeg&auto=webp", )
+```
+
+<!--
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/aBDkKyTpPLg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+-->
+
+## Retrieve multiple element values
+
+`[x]` where `x` is either
+
+-   a numeric atomic vector, such as `c(1,2,5)`; or
+
+-   a character atomic vector with element names.
+
+```{r JohnsFamily}
+JohnsFamily <-
+  list(
+    name = "John", 
+    age = 35,
+    spouse = list(
+      name = "Mary", 
+      age = 32),
+    children = list(
+      list(
+        name = "Bill", 
+        age = 5),
+      list(
+        name = "Jane", 
+        age = 3)
+    )
+  )
+```
+
+-   name: "John"\
+
+-   age: 35\
+
+-   spouse:
+
+    -   name: "Marty\
+    -   age: 32\
+
+-   children:
+
+    1.  
+
+        -   name: "Bill"
+
+        -   age: 5
+
+    2.  
+
+        -   name: "Jane"
+
+        -   age: 3
+
+------------------------------------------------------------------------
+
+-   There are 4 element values inside `JohnsFamily` list.
+
+```{r}
+# checking how many element values
+length(JohnsFamily)
+# checking element names
+names(JohnsFamily)
+```
+
+<div class="alert alert-info">
+In computer language, objects like `length` and `names` are **function** type objects. A function object has two different calls:
+
+  * name call:  
+  shows what inside the function, which is like the value binding with the name
+  
+```{r}
+length
+names
+```
+
+> Function value is a body consists of codes that can be executed with proper call, which is
+
+  * function call  
+  
+```{r}
+fncallExample <- list("John", 35, covid19Positive=FALSE)
+length(fncallExample)
+names(fncallExample)
+```
+
+**Function call** has `()` which sometimes needs values for the codes inside the function body to work properly. If the body codes does not require any value input to work, you still need to attach `()` to the function name to form a function call.
+
+```{r}
+Sys.Date() # show the date today
+```
+
+
+</div>
+
+John's name and age
+
+```{r}
+JohnsFamily[c(1,2)]
+JohnsFamily[c("name", "age")]
+```
+
+::: {.alert .alert-info}
+When you want to retrieve multiple element values from an object, the resulting vector will be the same type as its source object.
+
+-   Source object `JohnsFamily` is of **list** type.
+
+the returned vector will also be of **list** type.
+:::
+
+------------------------------------------------------------------------
+
+When retrieving one element value it is better to use `[[]]` (or `$` only for list) instead of `[]`.
+
+John's age
+
+```{r}
+JohnsFamily[["age"]] # or JohnsFamily[[2]]
+JohnsFamily["age"] # or JohnsFamily[2]
+```
+
+-   `JohnsFamily[["age"]]` indeed retrieves the element **value**.
+
+-   `JohnsFamily["age"]` create a vector of the same type as `JohnsFamily` to store the retrieved element value.
+
+::: {.alert .alert-info}
+`[]` is designed to retrieve multiple element values. Its resulting vector will always follow the same type as the source object.
+:::
+
+::: {.exercise #multipleRetrieval}
+From **concerts_obo**,
+
+1.  Retrieve the 3rd and 5th concert observations and bind the result value with an object name **concerts_sampled**.
+
+2.  For the second concert, what are its first show's time and location? Retrieve the information and bind the value with **firstShowInfo**.
+:::
+
+## Replacement
+
+`[[]]<-`, `[]<-`, `$ <-`
+
+```{r}
+JohnsFamilyCopy <- JohnsFamily
+
+JohnsFamilyCopy[[1]] <- "Watson" 
+JohnsFamilyCopy[[1]]
+```
+
+When replace multiple element values at once, you need to respect their source structure, that is
+
+-   the value has to follow the type of vector (atomic vector or list) as you retrieve multiple element values.
+
+element 1 and 2 are from a source of `list` with names `name` and `age`.
+
+```{r}
+JohnsFamilyCopy[c(1,2)] <- 
+  list(name="Watson", age=37) 
+JohnsFamilyCopy[c(1,2)]
+```
+
+Replacement is about replacing element **values** not element name. Therefore, you can ignore element names and simply:
+
+```{r}
+JohnsFamilyCopy[c(1,2)] <- 
+  list("Dickens", 32) 
+JohnsFamilyCopy[c(1,2)]
+```
+
+::: {.alert .alert-info}
+You can also use
+
+-   `-> [[]]`, `-> []`, `-> $`
+
+    ```{r}
+    "Watson" -> JohnsFamilyCopy[[1]]
+    ```
+
+-   `[[]]=`, `[]=`, `$ =`
+
+    ```{r}
+    JohnsFamilyCopy[[1]] = "Watson"
+    ```
+:::
+
+You can chain retrieval operators:
+
+```{r}
+JohnsFamilyCopy$spouse[["age"]]
+JohnsFamilyCopy$children[[1]]$name
+```
+
+<div class="exercise">
+From **concerts_obo**, due to Covid-19 the 3rd concert's 1st show time is changed to "2022/01/31 19:30:00" and the location is changed to "Taichung Opera House", please change the information
+
+</div>
+
+## Add element values
+
+### How to
+
+Adding an element value is like
+
+> Retrieve a non-existent element value and bind a value to it
+
+```{r example1}
+example1 <- c("John", "Mary", "Bill")
+# retrieve an non-existing element name "person4"
+example1[["person4"]] <- "Ken"
+# retrieve two non-existing element positions
+example1[c(7,8)] <- c("person7"="Jack", "Janem")
+example1
+```
+
+-   Be aware that `[] <-` has to bind a value that is consistent with source object type. `example1[c(7, 8)]` is a character atomic vector, so `example1[c(7, 8)] <-` can only bind with a character atomic vector.
+
+```{r}
+JohnsFamilyCopy2 <- JohnsFamily
+# Add a new born 
+JohnsFamilyCopy2$children[[3]] <- 
+  list(name="Lisa", age=0) # $ is for list only
+```
+
+::: {.exercise}
+How do you add the new born if you use `JohnsFamilyCopy3$children[3] <-`:
+
+```{r eval=F}
+JohnsFamilyCopy3 <- JohnsFamily
+JohnsFamilyCopy3$children[3] <-
+
+```
+:::
+
+### Data construction
+
+Adding element values is commonly used to construct whole vector.
+
+For example, we can directly construct the following whole vector
+
+```{r}
+height <- c("001"=177, "002"=183, "003"=173)
+```
+
+Or we can
+
+```{r}
+height <- numeric(0) # Declaration
+
+height[["001"]] <- 177
+height[c("002", "003")] <- c(183, 173)
+```
+
+-   The first step creates an empty vector with type **numeric** and bind that value to a name called `height`.
+
+::: {.alert .alert-info}
+When you bind a name with no value but its value type, it is called **declaration**.
+:::
+
+-   Declaration is necessary since without it there is no value to operate retrieval on -- even our goal is to add values.
+
+<div class="alert alert-success">
+Each type of vector has a different declaration function to call:
+
+```{r}
+# declare a numeric object
+object_numeric <- numeric(0)
+# declare a character object
+object_character <- character(0)
+# declare a logical object 
+object_logical <- logical(0)
+```
+
+  * You can omit `0` if you want.
+
+Be aware! To declare an empty list object:
+```{r}
+object_list <- list()
+```
+
+  * NOT `list(0)`.
+
+</div>
+
+### Data construction example
+
+Declare-then-add method is extremely convenient for list construction since a lot of time we know how we want to retrieve the information later.
+
+Consider a course a student takes in **school year 108**, **semester 1**. The course is 
+
+  * name: "programming for data science"
+  
+  * credit: 2
+
+We know this course information can be formed as:
+
+```{r}
+course1 <- 
+  list(
+    name="programming for data science",
+    credit=2
+  )
+```
+
+Since the student can takes many courses in the semester. To construct a data set **classSchedule** to contain all possible courses' information, we can think about 
+
+  * How do we want to retrieve **course1** later from **classSchedule**.
+
+Suppose the following is the retrieval method you plan to use to retrieve **course1** later:
+
+```{r}
+# Retrieve the 1st course in semester 1, school year 108
+classSchedule$yr108$semester1[[1]] 
+
+```
+
+Then you can:
+
+```{r}
+# step 1 (do it only once): declare
+classSchedule <- list()
+```
+
+  -   Be careful it is not `list(0)`.
+
+```{r}
+# step 2: add
+classSchedule$yr108$semester1[[1]] <- course1
+```
+
+
+This will result in a list data set that is the same as the direct approach delivers (the below one):
+```{r}
+classSchedule <- list(
+  yr108 = list(
+    semester1 = list(
+      list(
+        name="programming for data science",
+        credit=2
+      )
+    )
+  )
+)
+```
+
+This requires strong familiarity with **nested** list usage In this case, we can declare an empty list and use add method to complete the list:
+
+```{r}
+classSchedule <- list()
+```
+
+-   Be careful it is not `list(0)`.
+
+```{r}
+# Retrieve the course name of the the 1st course in semester 1, school year 108
+classSchedule$yr108$semester[[1]]$name <- "programming for data science"
+# Retrieve the course credit of the the 1st course in semester 1, school year 108
+classSchedule$yr108$semester[[1]]$credit <- 2
+```
+
+<div class="exercise">
+The 5th concert decides to add one more show which shares the same show information as its first show except the date is 2 days later.
+
+</div>
+
+## Remove element values
+
+It is a **save-what-you-want** method.
+
+> Retrieve element values you want and bind it with the source object again
+
+```{r}
+source_object <- source_object_retrieve_what_you_want
+```
+
+
+***
+
+Remove "Jack"
+
+```{r}
+example2 <- c("John", "Mary", "Bill", person4="Jack")
+```
+
+1.  Retrieve element values you want
+
+```{r}
+example2[c(1, 2, 3)] 
+```
+
+2.  Bind 1 with the source object again
+
+```{r}
+example2 <- example2[c(1, 2, 3)]
+```
+
+<div class="alert alert-info">
+Sequence generator.
+
+From number **n** to number **m**, each increases (or decreases if m<n) by **1** :
+```{r}
+1:3 # from 1 to 3, each increases by 1
+7:11
+
+2:-1 # from 2 to -1, each decreases by 1
+
+example1[c(1,2,3)] # the same as
+example1[1:3]
+```
+
+From number **n** to number **m**, each increases by **k** :
+```{r}
+1:3 # the same as
+seq(from=1, to=3, by=1) # from 1 to 3 increase by 1
+
+```
+
+```{r}
+seq(from=3, to=11, by=4) # from 3 to 11 increase by 4
+```
+
+Divide the interval from number **n** to number **m** by **q** equal length cuts (including cuts **m** and **n**)
+```{r}
+seq(from=3, to=11, length.out=10) # divide interval [3, 11] into 10 equal length cuts
+```
+
+
+</div>
+
+::: {.alert .alert-info}
+R's `[]` retrieval can take **position-exclusive** indices, which is `-c(position indices)` which will retrieve all element values **but** those specified in the position indices.
+
+```{r}
+example3 <- c("John", "Mary", "Bill", person4="Jack")
+
+## inclusive approach
+example3[c(1, 2, 3)]
+
+## exclusive approach
+example3[-c(4)]
+
+## multiple exclusion is possible
+example3[-c(1, 4)]
+```
+
+
+Removal with exclusive indexation:
+
+```{r}
+example4 <- c("John", "Mary", "Bill", person4="Jack")
+
+# Object source <- retrieval of elements to keep
+example4 <-
+  example4[-c(4)]
+
+example4
+```
+
+Be careful. Exclusive indexation does not work on element names since you can not take a negative sign on characters:
+
+```{r}
+example5 <- c("John", "Mary", "Bill", person4="Jack")
+
+# ERROR
+example5[-c("person4")]
+```
+:::
+
+
+<div class="alert alert-warning">
+If you use `:` to generate exclusion sequence:
+```{r}
+## exclude 2 to 4
+example3[-c(2, 3, 4)]
+```
+
+The negative indices:  
+```{r}
+-c(2, 3, 4)
+```
+is not the same as:  
+```{r}
+-2:4 # which is from -2 to 4
+```
+
+If you want R to do part of the command first, you can enclose that part by `()`:
+
+```{r}
+# generate 2:4 first then take negative sign
+-(2:4)
+```
+
+  * R will do `2:4` first then take `-`.
+
+</div>
+<div class="exercise">
+
+Due to Covid-19 concerts 2, 5, 7 are cancelled. Remove those three concerts from **concerts_obo**.
+
+</div>
+
+
+::: {.exercise}
+If John divorced Mary, how do you change the record by removing the spouse element?
+
+```{r, eval=FALSE}
+JohnsFamilyCopy4 <- JohnsFamily
+```
+:::
+
+
+------------------------------------------------------------------------
+
+list has an external removal technique, which is to bind **NULL** with the retrieved element value.
+
+```{r}
+JohnsFamilyCopy5 <- JohnsFamilyCopy6 <- JohnsFamilyCopy7 <- JohnsFamilyCopy8 <-  JohnsFamily
+```
+
+Techniques that apply to both atomic vector and list:
+
+```{r}
+JohnsFamilyCopy5 <- 
+  JohnsFamilyCopy5[-c(3)]
+```
+
+Techniques that apply only to list
+
+```{r}
+JohnsFamilyCopy6$spouse <- NULL
+```
+
+Remove multiple elements at once:
+
+```{r}
+JohnsFamilyCopy7[c(3, 4)] <- NULL
+```
+
+
+## Example on data.taipei  
+
+  * 臺北捷運車站廣告契約出租資料: <https://data.taipei/#/dataset/detail?id=1af7c10f-2386-4ba3-ac3d-85b83035dcc7>
+  
+There are two ways to access the data:
+
+  * Download .csv (comma-separated values file) and import to R:  
+    
+    * **Environment** > **Import Dataset** > **From Text (readr)**
+
+  * API approach  
+  
+### Download .csv approach
+
+  * Sometimes you need to adjust encoding for data import:
+  
+    *  **Locale** > **Encoding**: BIG5
+
+### API approach
+
+```{r}
+install.packages("httr")
+```
+
+
+```{r}
+mrtStationAds <- 
+  httr::content(httr::GET("https://data.taipei/api/v1/dataset/91290609-2b8b-4130-8ce9-e6085529bc46?scope=resourceAquire&limit=1000"))
+```
+
+  * Resource endpoint: https://data.taipei/api/v1/dataset/91290609-2b8b-4130-8ce9-e6085529bc46
+  
+  * Query parameter and parameter value:  
+  
+    * Follow resource endpoint after `?` (query sign)
+    
+    * In `query_parameter=parameter_value` pair and separate each pair by `&`. 
+    
+  * http verb `GET`:  
+  
+    * The web action to take regarding that resource
+
+***
+
+The Maokong Gondola (貓空纜車) Station Data: <https://ptx.transportdata.tw/MOTC?t=Rail&v=2#!/Metro/MetroApi_Station>
+
+```{r}
+maokongGondola <- httr::content(httr::GET("https://ptx.transportdata.tw/MOTC/v2/Rail/Metro/Station/TRTC?$top=30&$format=JSON"))
+```
+
+<div class="alert alert-info">
+API approach obtains data on the run. When the endpoint is a real-time (即時) data endpoint, you can build a real-time service app based on API request, like the app **Taipei Bus (台北等公車)**.
+
+API retrieved data mostly follows UTF-8 encoding (a standard encoding system applied on non-English characters) which avoids encoding/decoding issues as we face in .csv download situation.
+</div>
+
+### Saving your data
+
+Through out the semester we will build an app. Whatever information the app needs is better organized as a list. We can use declare-then-add approach to build up the app information data, say `myApp`. 
+
+```{r}
+myApp <- list()
+```
+
+```{r}
+myApp$data[["臺北捷運車站廣告契約出租資料"]] <- mrtStationAds
+myApp$data[["貓空纜車車站資料"]] <- maokongGondola
+```
+
+Save `myApp`
+```{r}
+saveRDS(myApp, file="110-1-r4ds-app.rds")
+```
+
+***
+
+Load your data
+```{r}
+myApp = readRDS("110-1-r4ds-app.rds")
+```
+

@@ -1,0 +1,354 @@
+---
+title: "Final Project: The Drug Problem"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Desktop recording: Vimeo
+
+  1. Register a vimeo account at: https://vimeo.com
+  
+  2. Use Google chrome browser, and install vimeo recording extension by visiting: https://chrome.google.com/webstore/detail/vimeo-record-screen-webca/ejfmffkmeigkphomnpabpdabfddeadcb?hl=en
+  
+  3. After vimeo extension installed, restart your chrome. At the menu bar click the V icon of the vimeo app.
+
+## Data
+
+```{r}
+drug <- list()
+drug$source[[1]] <- 
+  "https://docs.google.com/spreadsheets/d/17ID43N3zeXqCvbUrc_MbpgE6dH7BjLm8BHv8DUcpZZ4/edit?usp=sharing"
+drug$data <- 
+  googlesheets4::read_sheet(
+    drug$source[[1]]
+  )
+```
+
+  * 資料來源
+
+```{r}
+browseURL("https://data.gov.tw/dataset/57268")
+```
+
+  * 樣本數
+
+```{r}
+final <- list()
+# the data has this many observations (14,824 obs)
+final$obs_number <- drug$data |> nrow()
+final$obs_number
+```
+
+  * 資料涵蓋範圍：
+  
+```{r}
+# it covers "2001-10-23" to "2019-06-30"
+{
+  # first we correct feature names
+  names(drug$data) <- unlist(drug$data[1,])
+  # remove the first feature name row
+  drug$data <- drug$data[-1,]
+  
+  # correct class (so far all character)
+  # correct date
+  {
+    drug$data$發生日期 |> as.integer() -> .dates
+    .dates + 19110000 -> .dates2
+    lubridate::ymd(.dates2) -> drug$data$發生日期2
+  }
+  # from "2001-10-23" to "2019-06-30"
+  drug$data$發生日期2 |> range() -> final$data_range
+}
+final$data_range
+```
+
+```{r}
+drug$data$發生西元年 |> unique() |> sort()
+```
+
+  * 並不是每一年都會有毒品破獲的資料，只有以下幾年: 2001 2003 2007 2011 2012 2016 2017 2018 2019.
+
+接下來我們想要提出以下的問題:
+
+  * 毒品問題有越來越嚴重嗎? 
+  
+  * 哪一個毒品品項是最大的問題來源?
+
+## 破獲毒品總重量
+
+
+### 依年度與品項分
+
+```{r}
+final$summarise$weights$by_year_item <-
+  {
+  drug$data$發生日期2 |> lubridate::year() -> 
+    drug$data$發生西元年
+  
+  .yearXitem <- factor(drug$data$發生西元年):factor(drug$data$毒品品項)
+  
+  drug$data |> split(.yearXitem) -> 
+    data_group_by_yearXitem
+  summarise_weights_by_year_item <- vector("numeric", length(data_group_by_yearXitem))
+  names(summarise_weights_by_year_item) <- names(data_group_by_yearXitem)
+  # for each group
+  for(.x in seq_along(data_group_by_yearXitem)){
+    data_group_by_yearXitem[[.x]]$`數量（淨重）_克` |> as.numeric() |>
+      sum(na.rm=T) -> summarise_weights_by_year_item[[.x]]
+  }
+  names(data_group_by_yearXitem) |>
+    stringr::str_split(":") |> list2DF() -> df_yearXitem
+  data.frame(
+    年=unlist(df_yearXitem[1,]),
+    毒品品項=unlist(df_yearXitem[2,]),
+    "數量（淨重）_克"=summarise_weights_by_year_item
+  ) 
+}
+View(final$summarise$weights$by_year_item)
+
+```
+
+### 依品項分
+
+  * 前幾大項是什麼？
+
+```{r}
+.df <- final$summarise$weights$by_year_item
+final$summarise$weights$by_item <- 
+{
+  # for each item
+  .df |> split(.df$毒品品項) -> .grouped_dfs
+  weights_byItem <- vector("numeric", length(.grouped_dfs))
+  names(weights_byItem) <- names(.grouped_dfs)
+  for(.x in seq_along(.grouped_dfs)){
+      .grouped_dfs[[.x]]$數量.淨重._克 |> sum() -> weights_byItem[[.x]]
+  }
+  # View(weights_byItem)
+  weights_byItem |> sort(decreasing = T)
+}
+View(final$summarise$weights$by_item)
+```
+
+  * 原始資料的毒品品項共有57項 . 
+
+### 時間趨勢
+
+  * 毒品問題是否越來越嚴重？
+
+    * 我們以毒品品項中總重量最大的前20個品項進行時間趨勢分析：
+
+```{r}
+final$summarise$weights$by_item[1:20] |> names() -> top20s
+final$top20s$byWeight <- top20s
+.df <- final$summarise$weights$by_year_item
+df_trend <- data.frame(
+  年=.df$年 |> unique() |> sort()
+)
+for(.x in seq_along(top20s))
+{
+  .df[.df$毒品品項 == top20s[[.x]], ] -> .dfX
+  .dfX[order(.dfX$年),] -> .dfX
+  row.names(.dfX) <- .dfX$年
+  
+  df_trend[[top20s[[.x]]]] <- .dfX[df_trend$年, ]$數量.淨重._克
+}
+final$summarise$weights$by_item_timetrend <- df_trend
+View(final$summarise$weights$by_item_timetrend)
+```
+
+  * 所有的項目在2018年均有明顯的增加 (Why?)
+  
+    * 這裡是以毒品的重量為衡量標準，但在我們下定論以前我們必須要考慮到， 原始資料裡面有很多案件的毒品重量都是零，有沒有可能只是一兩件大的案件造成2018重量明顯的超越過去幾年, 但以案件數來看沒有那麼嚴重？
+
+### 破獲毒品案件次數
+
+    
+```{r}
+final$summarise$counts$by_year_item <- {
+  # compute counts for each item
+  possibleYears <- final$summarise$weights$by_item_timetrend$年
+  df_infoContainer <- vector("list", length(possibleYears))
+  names(df_infoContainer) <- possibleYears
+  for(.x in seq_along(possibleYears)){
+    .year = possibleYears[[.x]]
+    pickYear <- drug$data$發生西元年 == .year
+    subsample <- drug$data[pickYear,]
+    subsample |> get_drugCount(drugnames=top20s) -> countX
+    countX[top20s] -> countXtop20s
+    names(countXtop20s) <- top20s
+    countXtop20s -> df_infoContainer[[.year]]
+  }
+  list2DF(df_infoContainer) -> df_infoContainer
+  row.names(df_infoContainer) <- top20s
+  df_infoContainer
+}
+final$summarise$counts$by_year_item |> View()
+```
+
+```{r}
+.df <- final$summarise$counts$by_year_item
+# for each item, get its total counts over years
+## for one year
+final$summarise$counts$onlyTotal_by_year_item <- 
+{
+  possibleYears <- names(.df)
+  output_countTotal <- vector("list", length(possibleYears))
+  names(output_countTotal) <- possibleYears
+  for(.x in seq_along(possibleYears)){
+    .year <- possibleYears[[.x]]
+    .df[[.year]] |> get_total() -> output_countTotal[[.x]]
+  }
+  # View(output_countTotal)
+  output_countTotal |> list2DF() -> output_countTotal #|> View()
+  row.names(output_countTotal) <- top20s
+  output_countTotal |> as.numeric.eachColumn()
+}
+
+View(final$summarise$counts$onlyTotal_by_year_item)
+```
+
+  * 以案件次數來看，台灣這幾年的毒品問題依然呈現一種快速上升的趨勢。 
+  
+## 結論
+
+  * 台灣自2018年開始毒品問題變得嚴重，其中安非他命是最大的毒品問題來源。
+  
+  * 要進一步了解變得嚴重的原因，必需回到供給需求面去探討，這幾年毒品的需求有大幅增加嗎？還是毒品的供給在大幅的增加當中。結合更細部的毒品相關資料如被判刑者的社會經濟背景，還有毒品查獲的地點與交易方式都有助於刻劃更清楚的市場均衡變化樣貌。
+  
+  
+
+
+```{r}
+.df <- data.frame(
+  年=final$summarise$weights$by_item_timetrend$年
+)
+.df$table <- vector("list", nrow(.df))
+.df
+for(.x in seq_along(.df$年)){
+  .x=1
+  .year <- .df$年[[.x]]
+  drug$data |> subset(drug$data$發生西元年==.year) -> subsampleX
+  subsampleX |> get_drugCount(drugnames = top20s) -> countX
+  countX[[1]] #|> class()
+}
+```
+
+
+```{r}
+summarise_counts_by_year_item <- vector("numeric", length(data_group_by_yearXitem))
+names(summarise_counts_by_year_item) <- names(data_group_by_yearXitem)
+# for each group
+final$summarise$counts$by_year_item <-
+  {
+  drug$data$發生日期2 |> lubridate::year() -> 
+    drug$data$發生西元年
+  
+  .yearXitem <- factor(drug$data$發生西元年):factor(drug$data$毒品品項)
+  
+  drug$data |> split(.yearXitem) -> 
+    data_group_by_yearXitem
+  
+  for(.x in seq_along(data_group_by_yearXitem)){
+    data_group_by_yearXitem[[.x]]$`數量（淨重）_克` |> as.numeric() |>
+      sum(na.rm=T) -> summarise_counts_by_year_item[[.x]]
+  }
+  names(data_group_by_yearXitem) |>
+    stringr::str_split(":") |> list2DF() -> df_yearXitem
+  data.frame(
+    年=unlist(df_yearXitem[1,]),
+    毒品品項=unlist(df_yearXitem[2,]),
+    "數量（淨重）_克"=summarise_counts_by_year_item
+  ) 
+}
+View(final$summarise$counts$by_year_item)
+```
+
+
+### Geographic
+
+```{r}
+drug$data |> View()
+```
+
+
+```{r}
+{
+  .df$毒品品項 |>
+    order(.df$數量.淨重._克, decreasing = T) -> .ix
+  .df[order(.df$數量.淨重._克, decreasing = T), ] |> View() 
+  
+    sort(decreasing=T) #|> names() -> drugnames_rankByWeights
+  top20drugs <- drugnames_rankByWeights[1:20]
+  
+  # for each top20drugs, observe time trend
+  for(.x in seq_along(top20drugs)){
+    .x=1
+    .df |> subset(.df$毒品品項==top20drugs[[.x]])
+  }
+}
+```
+
+
+```{r}
+# focus on 2018 since 2019 data do not cover the entire year
+  pick2018 <- {
+    summarise$weights$by_year_item |> names() |>
+    stringr::str_detect("2018:")
+  }
+  
+  summarise$weights$year2018$by_item <- {
+    summarise$weights$by_year_item[pick2018] |>
+      sort(decreasing = T)
+  }
+    
+  
+}
+# the top 10 sum in 2018 is
+summarise$top10$year2018 <- {
+  top10_year2018 <- head(summarise$weights$year2018$by_item, 10)
+  summarise$top10$year2018 <- names(top10_year2018) |> 
+    stringr::str_remove("2018:")
+  summarise$top10$year2018
+}
+```
+
+### Tracing top10
+
+  * What is the time trend of top 10 drugs?
+
+```{r}
+top10drugs <- summarise$top10$year2018
+pick10 <- drug$data$毒品品項 %in% top10drugs
+subsample <- drug$data[pick10, ]
+get_drugWeight <- function(dataSet, drugnames){
+  pickData <- dataSet$毒品品項 %in% drugnames
+  subsample <- dataSet[pickData, ]
+  subsample |> split(subsample$毒品品項) -> list_groupedData
+  drugWeights <- vector("list", length(list_groupedData))
+  names(drugWeights) <- names(list_groupedData)
+  for(.x in seq_along(list_groupedData)){
+    list_groupedData[[.x]]$`數量（淨重）_克` |>
+        as.numeric() |>
+        sum(na.rm=T) -> drugXweight
+    drugWeights[[.x]] <- drugXweight
+  }
+  return(drugWeights)
+}
+# for each year and each drug,
+subsample |> split(subsample$發生西元年) -> list_subsamples
+drugWeights_byYear <- vector("list", length(list_subsamples))
+names(drugWeights_byYear) <- names(list_subsamples)
+for(.x in seq_along(list_subsamples)){
+  drugWeights_byYear[[.x]] <- vector("list", length(top10drugs))
+  drugWeights_byYear[[.x]] <- {
+    list_subsamples[[.x]] |> get_drugWeight(drugnames=top10drugs) -> 
+      drugWeights_inYearX
+    drugWeights_inYearX[top10drugs]
+  }
+}
+list2DF(drugWeights_byYear) -> df_drugWeights_byYear
+row.names(df_drugWeights_byYear) <- top10drugs
+View(df_drugWeights_byYear)
+```
+

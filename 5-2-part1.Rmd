@@ -1,0 +1,256 @@
+## 5.2 Systematic analysis
+
+```{r}
+dataSet3 <-
+  data.frame(
+    dates = c("2016-11-15", NA, NA, "1997-05-07", "1995-08-25", "2002-09-20", NA, NA, NA, "1995-07-16", "2011-06-22"),
+    grades = c(29, 53, 26, 27, 55, 69, NA, NA, 63, NA, 56),
+    genders = c("Male", "Female", "Male", "Male", "Female", "Female", NA, "Male", "Male", "Female", "Female"),
+    majors = c("economics", "economics", NA, "economics", "economics", "economics", "economics", "statistics", "law", "economics", "law")
+  )
+```
+
+```{r}
+# class check
+class_check <- vector("integer", length(dataSet3))
+for(.x in seq_along(dataSet3)){
+  class_check[[.x]] <- class(dataSet3[[.x]])
+}
+names(class_check) <- names(dataSet3)
+class_check
+
+# NA check
+na_check <- vector("integer", length(dataSet3))
+for(.x in seq_along(dataSet3)){
+  na_check[[.x]] <- sum(is.na(dataSet3[[.x]]))
+}
+names(na_check) <- names(dataSet3)
+na_check
+```
+
+```{r}
+class_check <- check_class(dataSet3)
+na_check <- check_na(dataSet3)
+```
+
+
+```{r}
+result <- {
+  # class check
+class_check <- vector("integer", length(dataSet3))
+for(.x in seq_along(dataSet3)){
+  class_check[[.x]] <- class(dataSet3[[.x]])
+}
+names(class_check) <- names(dataSet3)
+class_check # last executable line
+}
+```
+
+```{r}
+# checking blocks for dataSet3
+class_check <- {
+  # class check
+  class_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    class_check[[.x]] <- class(dataSet3[[.x]])
+  }
+  names(class_check) <- names(dataSet3)
+  class_check # the last executed line
+}
+
+
+na_check <- {
+  # NA check
+  na_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    na_check[[.x]] <- sum(is.na(dataSet3[[.x]]))
+  }
+  names(na_check) <- names(dataSet3)
+  na_check # the last executed line
+}
+```
+
+
+```{r}
+dataSet4 = data.frame(
+  x = c(6,10,10,6,10,6,NA,NA,3,7),
+  y = c(2,3,6,6,8,2,8,6,8,3)
+)
+```
+
+
+```{r}
+dataSet3 = dataSet4
+# checking blocks for dataSet3
+class_check <- {
+  # class check
+  class_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    class_check[[.x]] <- class(dataSet3[[.x]])
+  }
+  names(class_check) <- names(dataSet3)
+  class_check # the last executed line
+}
+
+
+na_check <- {
+  # NA check
+  na_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    na_check[[.x]] <- sum(is.na(dataSet3[[.x]]))
+  }
+  names(na_check) <- names(dataSet3)
+  na_check # the last executed line
+}
+```
+
+
+```{r}
+dataSet3 <-
+  data.frame(
+    dates = c("2016-11-15", NA, NA, "1997-05-07", "1995-08-25", "2002-09-20", NA, NA, NA, "1995-07-16", "2011-06-22"),
+    grades = c(29, 53, 26, 27, 55, 69, NA, NA, 63, NA, 56),
+    genders = c("Male", "Female", "Male", "Male", "Female", "Female", NA, "Male", "Male", "Female", "Female"),
+    majors = c("economics", "economics", NA, "economics", "economics", "economics", "economics", "statistics", "law", "economics", "law")
+  )
+
+# checking blocks for dataSet3
+class_check <- {
+  # class check
+  class_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    class_check[[.x]] <- class(dataSet3[[.x]])
+  }
+  names(class_check) <- names(dataSet3)
+  class_check # the last executed line
+}
+
+
+na_check <- {
+  # NA check
+  na_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    na_check[[.x]] <- sum(is.na(dataSet3[[.x]]))
+  }
+  names(na_check) <- names(dataSet3)
+  na_check # the last executed line
+}
+
+
+dataSet4 = data.frame(
+  x = c(6,10,10,6,10,6,NA,NA,3,7),
+  y = c(2,3,6,6,8,2,8,6,8,3)
+)
+
+dataSet3 <- dataSet4
+# checking blocks for dataSet3
+class_check <- {
+  # class check
+  class_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    class_check[[.x]] <- class(dataSet3[[.x]])
+  }
+  names(class_check) <- names(dataSet3)
+  class_check # the last executed line
+}
+
+
+na_check <- {
+  # NA check
+  na_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    na_check[[.x]] <- sum(is.na(dataSet3[[.x]]))
+  }
+  names(na_check) <- names(dataSet3)
+  na_check # the last executed line
+}
+
+```
+
+
+```{r}
+ataSet3 <- dataSet4
+# checking blocks for dataSet3
+```
+
+### function is portable programming block
+
+```{r}
+check_class <- function(){
+  # class check
+  class_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    class_check[[.x]] <- class(dataSet3[[.x]])
+  }
+  names(class_check) <- names(dataSet3)
+  class_check # the last executed line
+}
+
+check_na <- function(){
+  # NA check
+  na_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    na_check[[.x]] <- sum(is.na(dataSet3[[.x]]))
+  }
+  names(na_check) <- names(dataSet3)
+  na_check # the last executed line
+}
+```
+
+```{r}
+check_class # tell you details of programming block (name call)
+check_class() # a function call, it would execute the programming block for you
+```
+
+
+```{r}
+# function definition
+# two portable programming blocks design for dataSet3
+check_class <- function(){
+  # class check
+  class_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    class_check[[.x]] <- class(dataSet3[[.x]])
+  }
+  names(class_check) <- names(dataSet3)
+  class_check # the last executed line
+}
+
+check_na <- function(){
+  # NA check
+  na_check <- vector("integer", length(dataSet3))
+  for(.x in seq_along(dataSet3)){
+    na_check[[.x]] <- sum(is.na(dataSet3[[.x]]))
+  }
+  names(na_check) <- names(dataSet3)
+  na_check # the last executed line
+}
+```
+
+
+```{r}
+# a long program
+
+dataSet3 <-
+  data.frame(
+    dates = c("2016-11-15", NA, NA, "1997-05-07", "1995-08-25", "2002-09-20", NA, NA, NA, "1995-07-16", "2011-06-22"),
+    grades = c(29, 53, 26, 27, 55, 69, NA, NA, 63, NA, 56),
+    genders = c("Male", "Female", "Male", "Male", "Female", "Female", NA, "Male", "Male", "Female", "Female"),
+    majors = c("economics", "economics", NA, "economics", "economics", "economics", "economics", "statistics", "law", "economics", "law")
+  )
+
+## need check here
+class_check1 <- check_class()
+na_check1 <- check_na()
+## other part of the program
+
+dataSet4 = data.frame(
+  x = c(6,10,10,6,10,6,NA,NA,3,7),
+  y = c(2,3,6,6,8,2,8,6,8,3)
+)
+dataSet3 = dataSet4
+## need check here
+class_check2 <- check_class()
+na_check2 <- check_na()
+```
+

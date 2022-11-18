@@ -1,0 +1,101 @@
+老師您好，抱歉打擾了。我期末報告最後的部分有個問題一直用不好，想請問一下老師我的程式哪裡出了問題
+```{r}
+
+df<-jsonlite::fromJSON("https://raw.githubusercontent.com/tpemartin/110-1-r4ds-main/main/taiwan_vege_restaurant.json")
+
+df <- unique(df)
+df|> duplicated() |> which()
+
+View(df)
+```
+
+identify and remove repeated information
+
+```{r}
+df<-df[-c(2,3,4,8)]
+# remove incorrect information
+
+# df$DonationReceived <-  vector("list", length=64)
+nrow(df)
+df$DonationReceived <-  vector("list", length=64)
+for (.x in 1:64) {
+
+  # .x=1
+  df$donation[[.x]] |> as.numeric()
+  df$donation[[.x]][[1]]->df$DonationReceived[[.x]]
+
+}
+df$DonationReceived |> unlist()->df$DonationReceived
+```
+
+
+Retrieve Donation Received
+```{r}
+df$DonationGaveAway <-  vector("list", length=64)
+df$donation
+whichIsNA <- which(is.na(df$donation))
+for (.x in 1:10) {
+  df$donation[[.x]] |> as.numeric()
+ df$donation[[.x]][[2]]->df$DonationGaveAway[[.x]] 
+}
+for (.x in 11:16) {
+  NA -> df$DonationGaveAway[[.x]] 
+}
+ for (.x in 17:64) {
+   df$donation[[.x]][[2]]->df$DonationGaveAway[[.x]] 
+ }
+df$DonationGaveAway  |> unlist ()->df$DonationGaveAway
+```
+
+
+Retrieve DonationGaveAway
+```{r}
+df$DonationReceived[is.na(df$DonationReceived)] <- 0
+df$DonationGaveAway[is.na(df$DonationGaveAway)] <- 0
+df$DonationRate <-  vector("list", length=64)
+df$DonationReceived[[1]] |> class()
+
+ for (.x in 1:64) {
+   df$DonationGaveAway [[.x]]|> as.numeric()->df$DonationGaveAway[[.x]] |> class()
+   df$DonationReceived [[.x]]|> as.numeric() ->df$DonationReceived [[.x]]
+   Map("/",df$DonationGaveAway [[.x]],df$DonationReceived [[.x]])-> df$DonationRate[[.x]]
+
+ }
+df$DonationRate |> unlist()-> df$DonationRate 
+order( df$DonationRate ) -> df$DonationRateRank
+df <- df[-4]
+```
+
+
+這些是目前沒問題的部分，但後面我想做for each group的分析的時候 都沒辦法用split 來做
+
+```{r}
+mat <- matrix(0, nrow = 64, ncol = 64)
+ .df <- data.frame(mat)
+
+```
+
+
+# converting matrix to data frame
+
+```{r}
+df_selected <- 
+  dplyr::select(df,c('vegetarianTypes','DonationRate')) 
+df_selected$vegetarianTypes |> class() 
+# it is a list, not an atomic vector. You can not split a data frame based on a list
+```
+
+Try this to convert the list into a character vector with pasted types:
+```{r}
+for(.x in seq_along(df_selected$vegetarianTypes)){
+  df_selected$vegetarianTypes[[.x]] <- 
+    paste(df_selected$vegetarianTypes[[.x]], collapse="-")
+}
+df_selected$vegetarianTypes |> unlist() -> df_selected$vegetarianTypes
+
+View(df_selected)
+```
+
+
+Michael1598746 @Michael1598746 15:02
+我一開時是用只有兩個columns 的data frame來存資料，但是在做split的時候就會顯示錯誤，說長度不足。後來改用矩陣再轉回來，columns和rows是64x64了，但第一欄的長度還是0，然後點開來看又顯示是長度64的list，所以我不太清楚這樣是我哪邊搞錯了

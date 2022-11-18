@@ -1,0 +1,7 @@
+
+Ordered factor has to have a setup in **BOTH**
+
+  * `levels = c("very bad","bad","satisfied ","happy","very happy")` 
+  
+  * `ordered = T`
+  

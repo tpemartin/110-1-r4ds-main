@@ -1,0 +1,152 @@
+
+```{r}
+commonClasses <- list()
+```
+
+  * declare-then-add method to create a vector.
+  
+```{r}
+# save three different atomic vectors
+commonClasses$character <- c("John", "Mary", "Bill")
+commonClasses$numeric <- c(2.3, 4, 7)
+commonClasses$logical <- c(TRUE, T, F, FALSE)
+```
+
+```{r}
+# check each atomic vector class
+class(commonClasses$character) # name call on commonClasses to get its value then retrieve the element value whose element name is "character"
+
+class(commonClasses$numeric)
+class(commonClasses$logical)
+```
+
+## factor
+
+```{r}
+bloodTypes <- c("AB", "AB", "A", "B", "A", "A", "B", "O", "O", "AB")
+```
+
+```{r}
+bloodTypes_fct <- 
+  factor(bloodTypes)
+# # after name call on bloodTypes
+# bloodTypes_fct <-
+#   factor(
+#     c("AB", "AB", "A", "B", "A", "A", "B", "O", "O", "AB")
+#   )
+```
+
+
+```{r}
+table(bloodTypes_fct)
+```
+
+```{r}
+table(bloodTypes)
+```
+
+```{r}
+levels(bloodTypes_fct)
+```
+
+```{r}
+levels(bloodTypes)
+```
+
+```{r}
+bloodTypes_fct_levelsSetup <- 
+  factor(bloodTypes, levels=c("A", "B", "O", "AB"))
+```
+
+```{r}
+class(bloodTypes_fct_levelsSetup)
+```
+
+```{r}
+table(bloodTypes_fct_levelsSetup)
+```
+
+***
+
+```{r}
+household_income <- c("low income", "low income", "middle income", "low income", "high income", "middle income", "high income", "high income", "middle income", "middle income")
+```
+
+  * low income < middle income < high income
+
+```{r}
+household_income_fct <- 
+  factor(household_income)
+levels(household_income_fct)
+```
+
+```{r}
+table(household_income_fct)
+```
+
+
+```{r}
+household_income_fct_levelsSetup <-
+  factor(household_income, levels = c("low income", "middle income", "high income"))
+levels(household_income_fct_levelsSetup)
+```
+
+```{r}
+table(household_income_fct_levelsSetup)
+```
+
+```{r}
+household_income_fct_levelsSetup[[1]] # low income
+```
+
+```{r}
+household_income_fct_levelsSetup[[1]] < "middle income"
+```
+
+```{r}
+household_income_fct_levelsSetup_ordered[[1]] < "middle income"
+```
+
+  * human would say yes, it is true. 
+
+```{r}
+household_income_fct_levelsSetup[[1]] > "low income"
+```
+
+```{r}
+household_income_fct_levelsSetup_ordered[[1]] > "low income"
+```
+
+
+  * human would no, it is not true (false)
+
+```{r}
+household_income_fct_levelsSetup_ordered <-
+  factor(
+    household_income, 
+    levels = c("low income", "middle income", "high income"),
+    ordered = TRUE # Is levels ordered? (from the smallest to the larges)
+    )
+```
+
+```{r}
+class(household_income_fct_levelsSetup_ordered)
+```
+
+```{r}
+class(household_income_fct)
+class(household_income_fct_levelsSetup)
+```
+
+```{r}
+commonClasses$ordered_factor <- household_income_fct_levelsSetup_ordered
+class(commonClasses$ordered_factor)
+```
+
+```{r}
+commonClasses$factor <- bloodTypes_fct_levelsSetup
+class(commonClasses$factor)
+# factor parsed data has factor class
+```
+
+

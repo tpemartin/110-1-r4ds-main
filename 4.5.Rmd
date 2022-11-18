@@ -1,0 +1,112 @@
+
+```{r}
+# cancel 2 C, 1A
+chr <- c('C','C','A','A','B','B','B','B','C')
+as.factor(chr) # factor(chr)
+table(chr) # table on character vector
+table(as.factor(chr)) # class conversion
+factor(
+  chr, levels=c("B", "C", "A")
+)
+```
+
+```{r}
+{
+  # do table count on chr
+  table(chr) -> tb_chr
+  tb_chr
+  # ask computer to figure out the level sequence
+  sort(tb_chr, decreasing=T) -> sorted_tb_chr
+  sorted_tb_chr
+  # ask computer to give us names after sorting
+  names(sorted_tb_chr)
+}
+```
+
+```{r}
+newLevels <- 
+{
+  # table check
+  table(chr) -> tb_chr
+  # sort in decreasing order
+  sort(tb_chr, decreasing = T) -> sorted_tb_chr
+  # take out table item names
+  names(sorted_tb_chr)
+}
+fct_chr <- factor(chr, levels=newLevels)
+table(fct_chr)
+```
+
+```{r}
+x |> f() |> g(y) |> h(z)
+# use x to do f, then take the result
+# to do g, then take the result
+# to do h
+```
+
+```{r}
+newLevels <- 
+{
+  # table check
+  chr |> table() |>
+  # sort in decreasing order
+  sort(decreasing = T) |>
+  # take out table item names
+  names()
+}
+fct_chr <- factor(chr, levels=newLevels)
+table(fct_chr)
+```
+
+## 4.5.2
+
+```{r}
+library(magrittr) # import all the functions in this package
+```
+
+```{r}
+lubridate::ymd(....)
+```
+
+```{r}
+df <-
+data.frame(
+  types = c('C','C','C','A','C','A','A','B','B','B','B','C'),
+  response = c(83,59,54,68,64,88,72,73,66,94,53,55)
+)
+
+df$types |> class()
+
+df$types %<>% factor()
+
+df$types |> class()
+
+```
+
+```{r}
+df$type |> # read: use df$type, to do factor
+  factor() |> # to do table
+  table()
+```
+
+
+```{r}
+# df$types |> print()
+df$type %T>%
+  print() |> # read: use df$type, to do factor
+  factor() |> # to do table
+  table()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

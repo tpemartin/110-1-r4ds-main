@@ -1,0 +1,25 @@
+Ray
+
+linttt
+
+```{r}
+for(.x in seq_along(pickDate)){
+  drug$data$date[[.x+1]] <- pickDate[[.x]]
+}
+```
+
+is the same as
+
+```{r}
+# since length(pickDate) == 14823
+drug$data$date[2:14824] <- pickDate[1:14823]
+# Or
+drug$data$date[seq_along(pickDate)+1] <- pickDate[seq_along(pickDate)]
+```
+
+
+Amy 
+
+  * <https://github.com/AmyChen20021003/110-1-r4ds-main/blob/b18520f271bd64c0872d2904cf06151f393bc8c9/5-2.Rmd#L29> should use `stringr::str_detect`.
+  
+  

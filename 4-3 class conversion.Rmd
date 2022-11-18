@@ -1,0 +1,314 @@
+
+```{r}
+c(2, 5, 7) + 3 # work
+c("2", "5", "7") + 3 #won't work
+```
+
+```{r}
+convert2numeric <- as.numeric(c("2", "5", "7")) 
+convert2numeric + 3
+```
+
+```{r}
+c(2, 5, 7) + 3 # work
+list(2, 5, 7) + 3 # won't work
+```
+
+```{r}
+mylist <- list(2, 5, 7)
+mylist[[1]] <- mylist[[1]]+3
+mylist[[2]] <- mylist[[2]]+3
+mylist[[3]] <- mylist[[3]]+3
+print(mylist)
+```
+
+```{r}
+unlist(mylist) + 3
+```
+
+##
+
+```{r}
+examples <- list() # declare
+examples$unlist$source1 <-
+  list("A", "B", "C")
+examples$unlist$result1 <- 
+  unlist(examples$unlist$source1)
+examples$unlist$result1 <- 
+  unlist(
+    list("A", "B", "C")
+  )
+print(examples$unlist$source1)
+print(examples$unlist$result1)
+
+class(examples$unlist$source1)
+class(examples$unlist$result1)
+```
+
+```{r}
+examples$unlist$source2 <- 
+  list(
+    list("A", "B", list("C")),
+    list("D"),
+    "E"
+  ) # nested list
+examples$unlist$result2 <- 
+  unlist(
+    examples$unlist$source2
+  )
+
+print(examples$unlist$source2)
+print(examples$unlist$result2)
+class(examples$unlist$source2)
+class(examples$unlist$result2)
+```
+
+```{r}
+examples$unlist$source3 <- list(5, 6, 7)
+examples$unlist$result3 <-
+  unlist(
+    examples$unlist$source3
+  )
+
+class(examples$unlist$source3) # list class
+class(examples$unlist$result3) # numeric class
+```
+
+```{r}
+namedList <- list(name="John", spouse="Mary")
+
+unlist(
+  namedList
+) -> unlist_namedList
+
+unlist_namedList
+```
+
+```{r}
+participations <- 
+list('session 3',c("session 1", "session 2", "session 3"),'session 3',c("session 2", "session 1"),c("session 3", "session 1"),c("session 3", "session 2", "session 1"),'session 2','session 1',c("session 2", "session 1", "session 3"),c("session 3", "session 1", "session 2"))
+```
+
+
+```{r}
+# sessions that 1st student attended
+participations[[1]] 
+# sessions that 2nd student attended
+participations[[2]]
+```
+
+##
+
+```{r}
+as.list(
+  c("A", "B", "C")
+) # the same as
+list(
+  "A", "B", "C"
+) # NOT the same as
+list(
+  c("A", "B", "C")
+)
+
+# element names will be preserved
+as.list(
+  c(name="John", spouse="Mary")
+)
+```
+
+## 4.3.3 among atomic vectors
+
+```{r}
+lgl <- c(TRUE, FALSE) # logical class
+num <- c(0.2, 3, 0) # numeric class
+```
+
+
+```{r}
+as.character(lgl) # the same as
+c("TRUE", "FALSE")
+as.character(num) # the same as
+c("0.2", "3", "0")
+```
+
+```{r}
+num + 3
+as.character(num) + 3
+```
+
+***
+
+as.numeric
+
+```{r}
+tookRcourse <- c(TRUE, FALSE, TRUE, TRUE)
+class(tookRcourse)
+as.numeric(tookRcourse) # TRUE=1, FALSE=0
+howManyTookR <- sum(
+  as.numeric(tookRcourse)
+)
+sum(
+  c(1, 0, 1, 1)
+)
+1+0+1+1
+print(howManyTookR)
+```
+
+```{r}
+howManyTookR <- sum(
+  tookRcourse
+)
+print(howManyTookR)
+```
+
+```{r}
+tookRcourse
+which(tookRcourse) # apply to only logical vector
+```
+
+
+```{r}
+c("1", "5") +3
+as.numeric(
+  c("1", "5")
+) + 3
+```
+
+
+```{r}
+ming_guoDates <- c("1100822","1090723") # 民國110-8-22，民國109-7-23
+
+# 民國1年 is 1911
+westernDates <- 
+  as.numeric(ming_guoDates) +
+  19110000
+
+westernDates 
+
+lubridate::ymd(westernDates)
+```
+
+****
+
+as.logical
+
+```{r}
+# on numeric vector
+# tell us if the number is not zero
+print(num)
+as.logical(num)
+```
+
+```{r}
+# only person with a non-zero wage has a job
+wage <- c(3000, 2000, 0, 1000)
+haveJob <- as.logical(wage)
+haveJob
+```
+
+```{r}
+whoHasAJob <- which(haveJob)
+whoHasAJob
+
+# the wages of those who have a job
+wage[whoHasAJob]
+```
+
+`[]` can also use logical vector to pick your values
+
+```{r}
+wage[c(T, T, F, T)]
+```
+
+
+```{r}
+wage <- c(3000, 2000, 0, 1000)
+# want to pick up 3000 and 1000
+wage[c(1, 4)]
+wage[c(T, F, F, T)]
+```
+
+```{r}
+wage[c(1, 4)]
+wage[c(4, 1)]
+```
+
+####
+
+```{r}
+fct <- factor(
+  c('參','貮','貮','貮','壹','貮','參','貮','參','參'),
+  levels=c('壹','貮','參')
+  )
+
+dt <- lubridate::ymd_hms(
+  c('2012-08-25 19:36:00','2018-01-06 10:44:00','2010-03-08 00:56:00')
+)
+```
+
+```{r}
+print(fct)
+as.character(fct)
+
+class(fct)
+typeof(fct)
+as.numeric(fct) # the positions in levels
+```
+
+```{r}
+persians <- factor(
+  c('۶','۹','۸','۹','۶','۸','۸','۵','۹','۹'),
+  levels=c("۵", "۶", "۷", "۸", "۹")
+)
+
+print(persians)
+as.numeric(persians) # show you how R stores these values
+typeof(persians)
+
+as.character(persians) # show you how R print these values
+print(persians)
+```
+
+```{r}
+print(dt)
+as.character(dt)
+
+typeof(dt)
+as.numeric(dt) # how many seconds past 1970-01-01 00:00
+```
+
+```{r}
+dt
+dt + 30 # add 30 seconds
+dt + 60*60 # add 1 hour
+```
+
+```{r}
+x0 <- 1595950405 # the number of seconds
+lubridate::as_datetime(x0)
+```
+
+```{r}
+location_history <- jsonlite::fromJSON("https://www.dropbox.com/s/db2vt4w9u2w7onx/Location%20History.json?dl=1")
+```
+
+
+```{r}
+location_history$locations$timestampMs/(10**3)
+class(location_history$locations$timestampMs)
+```
+
+```{r}
+timeStampMs_as.numeric <- 
+  as.numeric(
+    location_history$locations$timestampMs
+  )
+timeStamp_inSecondUnit <-
+  timeStampMs_as.numeric/(10**3)
+
+timeStamp_dateTimeClass <-
+  lubridate::as_datetime(
+    timeStamp_inSecondUnit
+  )
+```
+

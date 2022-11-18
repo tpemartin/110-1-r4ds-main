@@ -1,0 +1,1140 @@
+# Operations on Atomic Vectors
+
+```{r, echo=FALSE, eval=TRUE}
+klippy::klippy()
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+
+```
+
+## Class
+
+> Types are about data storage. Class defines what we can do to a value.
+
+```{r}
+typeof(c("John", "Mary"))
+typeof(c(2, 3.1412))
+typeof(c(TRUE, TRUE, F))
+```
+
+```{r}
+class(c("John", "Mary"))
+class(c(2, 3.1412))
+class(c(TRUE, TRUE, F))
+```
+
+------------------------------------------------------------------------
+
+Start from the basic 3 types of value, working through various **parsing** functions we can make R understand different human records in different ways and operate on them as human do.
+
+For example, we want know what time it is after 20 seconds from "2021-01-01 12:03:33"
+
+```{r}
+"2021-01-01 12:03:33" + "20 seconds"
+```
+
+-   R does not know "2021-01-01 12:03:33" as time.
+
+-   R does not know "20 seconds" as time, not to mention the concept that one minute has only 60 seconds.
+
+```{r}
+install.packages("lubridate")
+```
+
+```{r}
+lubridate::ymd_hms("2021-01-01 12:03:33") + lubridate::seconds(20)
+```
+
+-   `lubridate::ymd_hms` is a parsing function for R to understand date/time. Once R understands, R will recognise the value as a date/time class ("POSIXct" "POSIXt").
+
+```{r}
+class("2021-01-01 12:03:33")
+class(lubridate::ymd_hms("2021-01-01 12:03:33"))
+```
+
+-   When R understands the value as a date/time value, R will know how to do the operation `+ lubridate::seconds(20)`.
+
+## Common classes of object value
+
+```{r}
+commonClasses <- list()
+```
+
+### Character, numeric, logical
+
+```{r}
+# save three different atomic vectors
+commonClasses$character <- c("John", "Mary", "Bill")
+commonClasses$numeric <- c(2.3, 4, 7)
+commonClasses$logical <- c(TRUE, T, F, FALSE)
+```
+
+```{r}
+# check each atomic vector class
+class(commonClasses$character) # name call on commonClasses to get its value then retrieve the element value whose element name is "character"
+
+class(commonClasses$numeric)
+class(commonClasses$logical)
+```
+
+### Factor
+
+Blood types of 10 persons:
+
+```{r}
+bloodTypes <- c("AB", "AB", "A", "B", "A", "A", "B", "O", "O", "AB")
+```
+
+Represent categorical data (類別資料). Data that
+
+-   has limited number of categories. (here only "A", "B", "O", "AB")
+
+And we normally would like to count how many in each category.
+
+-   Here 3 of "A", 3 of "AB", 2 of "B" and 2 of "O".
+
+To let R understand data is categorical, we use:
+
+```{r}
+bloodTypes_fct <- 
+  factor(bloodTypes)
+```
+
+To know how many categories are there:
+
+```{r}
+levels(bloodTypes_fct)
+```
+
+To count how many persons in each category:
+
+```{r}
+table(bloodTypes_fct)
+```
+
+------------------------------------------------------------------------
+
+When we summarise factor data and tell what we see (such as the number of persons in each blood type), the sequence from `levels(factor_data)` determines the sequence of summary presentation. If we don't like that sequence, we can setup levels when we parse data source:
+
+```{r}
+bloodTypes_fct_levelsSetup <- 
+  factor(bloodTypes, levels=c("A", "B", "O", "AB"))
+```
+
+```{r}
+levels(bloodTypes_fct_levelsSetup)
+table(bloodTypes_fct_levelsSetup)
+```
+
+```{r}
+commonClasses$factor <- bloodTypes_fct_levelsSetup
+class(commonClasses$factor)
+# factor parsed data has factor class
+```
+
+------------------------------------------------------------------------
+
+Some categorical data has the concept of order.
+
+Income levels from 10 households:
+
+```{r}
+household_income <- c("low income", "low income", "middle income", "low income", "high income", "middle income", "high income", "high income", "middle income", "middle income")
+```
+
+```{r}
+household_income_fct <- 
+  factor(household_income)
+levels(household_income_fct)
+```
+
+```{r}
+household_income_fct_levelsSetup <-
+  factor(household_income, levels = c("low income", "middle income", "high income"))
+levels(household_income_fct_levelsSetup)
+```
+
+```{r}
+table(household_income_fct_levelsSetup)
+```
+
+Is first household income level higher than "low income":
+
+```{r}
+household_income_fct_levelsSetup[[1]]
+household_income_fct_levelsSetup[[1]] > "low income"
+```
+
+To make R understand levels sequence has order meaning:
+
+```{r}
+household_income_fct_levelsSetup_ordered <-
+  factor(
+    household_income, 
+    levels = c("low income", "middle income", "high income"),
+    ordered = T
+    )
+```
+
+```{r}
+household_income_fct_levelsSetup_ordered[[1]]
+household_income_fct_levelsSetup_ordered[[1]] > "low income"
+
+household_income_fct_levelsSetup_ordered[[3]]
+household_income_fct_levelsSetup_ordered[[3]] > "low income"
+```
+
+When `ordered=T` the parsed data has two classes, "ordered" and "factor", we normally called it "ordered factor".
+
+```{r}
+commonClasses$ordered_factor <- household_income_fct_levelsSetup_ordered
+class(commonClasses$ordered_factor)
+```
+
+::: {.exercise}
+Parse `customerExperience` into an ordered factor atomic vector:
+
+```{r}
+customerExperience <- c('very happy','very happy','satisfied','satisfied','satisfied','very happy','bad','bad','satisfied','satisfied','bad','happy','happy','very happy','happy','happy','satisfied','very happy','very happy','satisfied','satisfied','very happy','satisfied','bad','very happy','very bad','very happy','bad','bad','very bad')
+```
+:::
+
+### Date/Time
+
+The most challenging task of parsing is to let R knows date and time. For dates, there are typically four systems:
+
+-   ymd: "2021/10/30", "2021-10-30", "2021 October 30", "2021 Oct. 30".\
+-   ydm: "2021/30/10", "2021-30-10", "2021 30 October", "2021 30 Oct."\
+-   mdy: "10/30/2021", "10-30-2021", "October 30, 2021", "Oct. 30, 2021"\
+-   dmy: "30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"
+
+Each system also has a variety of tiny twists on its expression such as the division symbol `/` or `-`, the month expression `October` or `Oct.`.
+
+Fortunately, the package `lubridate` offers four smart functions to deal with each type of date string:
+
+```{r}
+lubridate::ymd(c("2021/10/30", "2021-10-30", "2021 October 30", "2021 Oct. 30"))
+lubridate::ydm(c("2021/30/10", "2021-30-10", "2021 30 October", "2021 30 Oct."))
+lubridate::mdy(c("10/30/2021", "10-30-2021", "October 30, 2021", "Oct. 30, 2021"))
+lubridate::dmy(c("30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"))
+```
+
+```{r}
+# A parsed date data has Date class.
+commonClasses$date <- lubridate::dmy(c("30/10/2021", "30-10-2021", "30 October, 2021", "30 Oct., 2021"))
+class(commonClasses$date)
+```
+
+------------------------------------------------------------------------
+
+When it comes to date and time, the parsing task is even more daunting. We have to deal with which **time zone** we are talking about. The exact understanding of time involves with date as well. So a time data is actually a date-and-time data, such as "2021/10/30 13:22:52" at Taiwan and "2003 10 Oct. 07:08PM" at London.
+
+Depending on how detailed our time information is, there are three suffix to those four date parsing functions we learned.
+
+-   hms: hour minute second
+
+-   hm: hour minute
+
+-   h: hour
+
+::: {.alert .alert-info}
+For the list of time zones:
+
+-   <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
+:::
+
+------------------------------------------------------------------------
+
+"2021/10/30 13:22:52", "2021-10-31 1:22:52PM" at Taiwan
+
+-   The date format is ymd
+
+-   time format is hms
+
+-   time zone is "Asia/Taipei"
+
+```{r}
+dateTime_taipei <- 
+  lubridate::ymd_hms(
+    c("2021/10/30 13:22:52", "2021-10-31 1:22:52PM"),
+    tz = "Asia/Taipei")
+dateTime_taipei
+```
+
+------------------------------------------------------------------------
+
+"October 30, 2021, 23:10", "Oct. 30, 2021 1:10AM" at London
+
+-   The date format is mdy
+
+-   time format is hm
+
+-   time zone is "Europe/London"
+
+```{r}
+dateTime_london <- 
+  lubridate::mdy_hm(
+    c("October 30, 2021, 23:10", "Oct. 30, 2021 11:10PM"),
+    tz="Europe/London")
+dateTime_london
+```
+
+```{r}
+commonClasses$date_time <- c(
+  dateTime_taipei,
+  dateTime_london
+)
+class(commonClasses$date_time)
+```
+
+-   A parsed date/time data has classes POSIXct and POSIXt. We will call it date/time class.
+
+-   **POSIX** (the Portable Operating System Interface) is a standard (標準化格式); **ct** refers to calendar time and **t** refers to time.
+
+::: {.alert .alert-info}
+Previously we say that values of the same **type** can be concatenated together through `c()` to form an **atomic vector**. Actually the idea of **atomic** is more relaxed. It refers to values of the same **class**.
+
+Here both `dateTime_taipei` and `dateTime_london` are of the same date/time class. So we can concatenate them to form an atomic vector (which is also a date/time class):
+
+```{r}
+c(dateTime_taipei, dateTime_london)
+```
+:::
+
+A single time zone will be used through out the data/time class vector:
+
+```{r}
+commonClasses$date_time
+```
+
+::: {.alert .alert-info}
+Once a date/time source value is parsed, R will understand its meaning and know how to convert it to different time zone through `lubridate::with_tz()`:
+
+```{r}
+dateTime_london_atTaipei <-
+  lubridate::with_tz(
+    dateTime_london,
+    tz="Asia/Taipei"
+  )
+dateTime_london
+dateTime_london_atTaipei
+```
+:::
+
+::: {.alert .alert-danger}
+Be aware that for R to convert time zone the time value must be **parsed** date/time class value. Never do the following:
+
+```{r}
+lubridate::with_tz(
+  c("October 30, 2021, 23:10", "Oct. 30, 2021 1:10AM"),
+  tz="Asia/Taipei"
+)
+```
+:::
+
+::: {.exercise}
+Tata corporate with head quarter in India Deli has two subsidiaries overseas. One is in Mykonos, Greece, and the other is in Boston, USA. It has to deal with the following task constant: receive time information from both subsidiaries and collect them all together with India time zone expression.
+
+Consider the following subsidiaries time information:
+
+```{r}
+subsidiaries <- list()
+subsidiaries$boston <- c("2020 Oct. 13 15:00:00", "2019 Apr. 10 09:30:00") # boston time zone
+subsidiaries$mykonos <- c("14 Jan., 2021 03:27:00", "8 Aug., 2020 11:20:00") # mykonos time zone
+```
+
+Put all four time observation in one atomic vector with date/time class and expressed in Deli India time zone.
+
+```{r, echo=FALSE}
+subsidiaries$boston <- 
+  lubridate::ymd_hms(subsidiaries$boston,
+    tz="America/New_York")
+subsidiaries$mykonos <- 
+  lubridate::dmy_hms(subsidiaries$mykonos,
+    tz="Europe/Athens")
+allTime <- c(
+  subsidiaries$boston,
+  subsidiaries$mykonos
+)
+lubridate::with_tz(
+  allTime,
+  tz="Asia/Calcutta"
+)
+```
+:::
+
+------------------------------------------------------------------------
+
+There are cases when parsing date/time values you don't need to specify `tz` (time zone):
+
+-   The data is from **UTC** time zone (i.e. GMT+0); or\
+-   The data following the ISO8601 expression, which looks like "2021-11-01T17:41:49+0800" (in UTC+08:00 time zone) or "2021-11-01T17:41:49Z" (in UTC time zone).
+
+```{r}
+# No tz required
+# Parsed value will be expressed in UTC time zone
+lubridate::ymd_hms(
+  "2021-11-01T17:41:49+0800"
+)
+```
+
+::: {.alert .alert-danger}
+When time data is already in ISO8601 format and you specified `tz`, it will mean parsing time and then convert to the time zone specified in `tz`:
+
+```{r}
+lubridate::ymd_hms(
+  "2021-11-01T17:41:49+0800", 
+  tz="Europe/London"
+)
+```
+:::
+
+```{r, echo=FALSE}
+library(dplyr)
+vm <- vimeo::vimeoService_create()
+showcase <- vm$get_showcaseVideos(
+  uri="https://vimeo.com/showcase/8857547"
+)
+```
+
+### Data frame
+
+If the data set list is collected **feature-by-feature** so that
+
+-   all the feature vectors have **the same length**.
+
+-   all the feature vectors are **named**.
+
+```{r}
+survey_fbf <-
+  list(
+    age=c(54, 32, 28, 20), # age
+    gender=c("male", "female", "female", "male"), # gender
+    residence=c("north", "south", "east", "east"), # residence
+    income=c(100, 25, NA, 77) # income
+  )
+```
+
+```{r}
+survey_df <-
+  data.frame(
+    survey_fbf
+  )
+```
+
+If you already know you want to collect data feature by feature as a data frame, you can skip using `list()` for collection then use `data.frame()` for class parsing--simply use `data.frame()` for collection directly.
+
+```{r}
+survey_df_1step <-
+  data.frame(
+    age=c(54, 32, 28, 20), # age
+    gender=c("male", "female", "female", "male"), # gender
+    residence=c("north", "south", "east", "east"), # residence
+    income=c(100, 25, NA, 77) # income
+  )
+```
+
+```{r}
+# a parsed collection value will have data.frame class.
+commonClasses$data_frame <- survey_df_1step
+class(commonClasses$data_frame)
+```
+
+```{r}
+commonClasses$data_frame$gender
+```
+
+
+
+------------------------------------------------------------------------
+
+If feature vectors are not atomic vectors:
+
+```{r}
+survey_fbf2 <-
+  list(
+    age=list(54, 32, 28, 20), # age
+    gender=list("male", "female", "female", "male"), # gender
+    residence=list("north", "south", "east", "east"), # residence
+    income=list(100, 25, NA, 77) # income
+  )
+```
+
+-   `data.frame` will not parse it correctly.
+
+```{r}
+data.frame(survey_fbf2)
+```
+
+-   in this case, you use `list2DF()` to convert it to a data.frame instead:
+
+```{r}
+df_survey_fbf2 <- 
+  list2DF(survey_fbf2)
+```
+
+::: {.alert .alert-info}
+When feature vectors are all atomic vectors, use `data.frame` to parse data set list to a data frame When feature vectors are not all atomic vectors, use `list2DF` to parse data set list to a data frame
+:::
+
+<div class="exercise">
+Data frame parsing exercise:  
+  
+  1. Declare a list named dfExercise.
+
+```{r}
+dfExercise <- list()
+```
+
+The following feature-by-feature data set (dataSet1) collects name and age of three persons:
+```{r}
+dataSet1 <- list(
+  name=c("John", "Mary", "Ben"),
+  age=c(33, 45, NA)
+)
+```
+
+  2. Please parse the data set into a data frame class and add the parsed data frame to dfExercise$data1.
+  
+  3. We want to add another feature to dataSet1 called children. We want:
+```{r}
+dataSet1$children[[1]][[1]] # shows the first person's 1st child: name is Jane, age is 2
+dataSet1$children[[2]][[1]] # shows the second person's 1st child: name is Bill, age =3
+dataSet1$children[[2]][[2]] # the second pseron's 2nd child: name is Ken, age=0
+dataSet1$children[[3]][[1]] # the 3rd person's 1st child: name is William, age =10
+```
+
+  4. After adding another feature to dataSet1, parse it to a data frame and save the value at dfExercise$data2.
+  
+```{r, echo=FALSE}
+list2DF(dataSet1)
+```
+
+
+</div>
+
+------------------------------------------------------------------------
+
+One advantage of teaching R to understand your data collection as a data frame is that you have one more retrieval operator to use `[.row, .col]`
+
+-   An extension of `[]`. Therefore, the result would maintain the class of the source (still data frame).
+
+-   .row and .col can be atomic vector of element names or element positions.
+
+```{r}
+commonClasses$data_frame[2, "age"]
+commonClasses$data_frame[c(1,4), c("income","age")]
+```
+
+```{r}
+commonClasses$data_frame[c(1,4), ] # 1st and 4th rows and ALL columns
+commonClasses$data_frame[, c("income", "age")] # ALL rows, and the income and age columns
+```
+
+```{r}
+# [.row, .col] can not be used on a list class
+survey_fbf_named[2, "age"]
+```
+
+***
+Anythin we learn about `[]` retrieval also works here.
+
+```{r}
+# Remove
+commonClasses$data_frame[, -c(2)]
+# Replace
+commonClasses$data_frame[2, c( "age","income")] <- data.frame(31, 22)
+commonClasses$data_frame[c(1,2), c("age", "income")] <- data.frame(
+  age=c(10, 15),
+  income=c(10, 15)
+)
+# Add
+commonClasses$data_frame[, "isStudent"] <- data.frame(isStudent=c(T, T, F, T))
+```
+
+<div class="exercise">
+Without using `[.row, .col]` operator, simply using `[]`, `[[]]` and `$` that we learned before to complete the above **remove**, **replace** and **add** actions.
+
+```{r, echo=FALSE}
+# Remove
+commonClasses$data_frame[[2]] <- NULL
+# Replace
+commonClasses$data_frame$age[[2]] <- 31
+commonClasses$data_frame$income[[2]] <- 22
+commonClasses$data_frame$age[c(1,2)] <- c(10, 15)
+commonClasses$data_frame$income[c(1, 2)] <- c(10, 15)
+# Add
+commonClasses$data_frame$isStudent <- c(T, T, F, T)
+```
+
+</div>
+
+
+### Matrix
+
+In math we deal with matrix a lot, which is a two dimensional storage like a data frame but no column names--simply full of numbers.
+
+$$
+\begin{bmatrix}
+2 & 11 & -1\\
+3 & 4 & -5
+\end{bmatrix}
+$$
+
+```{r}
+commonClasses$matrix <- matrix(
+  c(2, 11, -1, 3, 4, -5), nrow=2, 
+  byrow = T # default is by column
+)
+class(commonClasses$matrix)
+```
+
+Not only numbers can form a matrix, heterogeneous types of values can as well.  
+```{r}
+# non atomic matrix
+matrix_nonAtomic <- matrix(
+  list(
+    32, "John", 
+    33, "Jane", 
+    34, "Ben"
+    ), nrow=2
+)
+matrix_nonAtomic
+```
+
+A **matrix** class object can enjoy `[.row, .col]` retrieval as **data frame**.
+
+::: {.alert .alert-info}
+If you already bind the source vector of matrix to a name, say `x`, you can simply change `x`'s dimension to convert it into matrix:
+
+```{r}
+x <- c(2, 11, -1, 3, 4, -5)
+dim(x)
+dim(x) <- c(2, 3)
+```
+
+Actually matrix is an extension of vector, which is simply a vector with dimension attribute (with more way to retrieve values, i.e. `[.row, .col]` way). Therefore, you can still retrieve values from a matrix as from a vector.
+
+```{r}
+x[2, 1] # the same as
+x[2]
+
+x[2, c(2, 3)] # the same as
+x[c(4, 6)]
+```
+
+```{r}
+matrix_nonAtomic
+matrix_nonAtomic[2, 1] # the same as 
+matrix_nonAtomic[2]
+
+matrix_nonAtomic[2, c(2, 3)] # the same as
+matrix_nonAtomic[c(4, 6)]
+```
+:::
+
+***
+
+<figure>
+```{r type-and-class, eval=T, echo=F}
+# knitr::include_graphics("img/type-and-class.jpeg")
+teachDS::img_centering("img/type-and-class.jpeg", "85%")
+```
+<figcaption>Type and class</figcaption>
+</figure>
+
+## Class conversion
+
+Why class conversion?
+
+  * Convert non-atomic vector class to atomic vector class to take advantage of atomic vector's vectorized operations. 
+  
+```{r}
+c(2, 5, 7) + 3 # work
+list(2, 5, 7) + 3 # won't work
+```
+
+For `list(2, 5, 7)+3` to work, you need:
+```{r}
+mylist <- list(2, 5, 7)
+mylist[[1]] <- mylist[[1]]+3
+mylist[[2]] <- mylist[[2]]+3
+mylist[[3]] <- mylist[[3]]+3
+print(mylist)
+```
+
+
+  * To take advantage of methods that can only apply to certain class object.
+  
+```{r}
+c(2, 5, 7) + 3 # work
+c("2", "5", "7") + 3 #won't work
+```
+
+For add a number method can only apply to a numeric class object.
+```{r}
+convert2numeric <- as.numeric(c("2", "5", "7")) 
+convert2numeric + 3
+```
+
+
+### list to atomic vector
+
+-   Use `unlist()`.
+
+```{r}
+examples <- list()
+examples$unlist$source1 <-
+  list("A", "B", "C")
+examples$unlist$result1 <- 
+  unlist(examples$unlist$source1)
+
+print(examples$unlist$source1)
+print(examples$unlist$result1)
+
+class(examples$unlist$source1)
+class(examples$unlist$result1)
+```
+
+-   `unlist()` takes out all **singletons** spotted in a list (no matter how deeply they are nested) and turns them into an atomic vector.
+
+```{r}
+examples$unlist$source2 <- 
+  list(
+    list("A", "B", list("C")),
+    list("D"),
+    "E"
+  )
+examples$unlist$result2 <- 
+  unlist(
+    examples$unlist$source2
+  )
+
+print(examples$unlist$source2)
+print(examples$unlist$result2)
+class(examples$unlist$source2)
+class(examples$unlist$result2)
+```
+
+-   unlisted list is not necessarily a character class. Its class will depend on the singleton's class inside the source list. If they are all numeric, unlisted atomic vector will be of numeric class.
+
+```{r}
+examples$unlist$source3 <- list(5, 6, 7)
+examples$unlist$result3 <-
+  unlist(
+    examples$unlist$source3
+  )
+
+class(examples$unlist$source3) # list class
+class(examples$unlist$result3) # numeric class
+```
+
+-   Only **numeric class** value can have access to `+` method to add numbers.
+
+------------------------------------------------------------------------
+
+Element names, if presented in the list, will be preserved:
+
+```{r}
+namedList <- list(name="John", spouse="Mary")
+
+unlist(
+  namedList
+) -> unlist_namedList
+
+unlist_namedList
+```
+
+::: {.exercise}
+<br>
+
+```{r}
+participations <- 
+list('session 3',c("session 1", "session 2", "session 3"),'session 3',c("session 2", "session 1"),c("session 3", "session 1"),c("session 3", "session 2", "session 1"),'session 2','session 1',c("session 2", "session 1", "session 3"),c("session 3", "session 1", "session 2"))
+```
+
+`participations` represents sessions of speech that ten student had participated.
+
+```{r}
+# sessions that 1st student attended
+participations[[1]] 
+# sessions that 2nd student attended
+participations[[2]]
+```
+
+Try to use `table()` which works only on atomic vectors to summarise number of participants in each sessions with the presentation starts from session 1, then to session 2, then to session 3.
+:::
+
+### atomic vector to list
+
+Occasionally we need to convert an atomic vector to a list class, using `as.list()`:
+
+```{r}
+as.list(
+  c("A", "B", "C")
+)
+
+# element names will be preserved
+as.list(
+  c(name="John", spouse="Mary")
+)
+```
+
+
+### among atomic vectors
+
+You can use `as.targetClass` to convert a value to `targetClass` class. For example, 
+
+  * `as.numeric()` converts a value to a numeric class;
+  
+  * `as.character()` converts a value to a character class;
+  
+so on so forth. Among all class conversion, `as.numeric()` and `as.character()` are mostly commonly used. Here we mainly introduce these two conversions. Possibly also `as.logical()`. 
+
+#### on basic class
+
+For basic classes that directly descends from basic types (i.e. character class, logical class, numeric class), `as.numeric()` and `as.character()` do their jobs directly--and very likely as you expect. 
+
+```{r}
+lgl <- c(TRUE, FALSE)
+num <- c(0.2, 3, 0)
+```
+
+***
+
+#### as.character{-}
+
+```{r}
+as.character(lgl)
+as.character(num)
+```
+
+***
+
+#### as.numeric{-}
+
+Probably the most commonly used conversions since occasionally we desire to apply mathematical computations on the non-numeric vectors. 
+
+##### Apply to logical:{-}
+
+```{r}
+tookRcourse <- c(TRUE, FALSE, TRUE, TRUE)
+as.numeric(tookRcourse)
+howManyTookR <- sum(
+  as.numeric(tookRcourse)
+)
+print(howManyTookR)
+```
+
+  * Form a vector of 0/1 vector. It is mathematically useful. 
+
+<div class="alert alert-info">
+Actually when apply mathematical operations on a logical vector, you don't have to convert its class. In computer science, computer language will always change TRUE to 1 and FALSE to 0 when doing mathematical calculations.
+```{r}
+howManyTookR <- sum(tookRcourse)
+print(howManyTookR)
+```
+</div>
+
+##### Apply to characters:{-}
+
+```{r}
+ming_guoDates <- c("1100822","1090723") # 民國100-8-22，民國109-7-23
+
+# 民國1年 is 1911
+westernDates <- 
+  as.numeric(ming_guoDates) +
+  19110000
+
+westernDates 
+
+lubridate::ymd(westernDates)
+```
+
+***
+
+#### as.logical{-}
+
+##### Apply to numeric: {-}
+
+It helps us know if any numer is zero: 
+```{r}
+# on numeric vector
+# tell us if the number is not zero
+print(num)
+as.logical(num)
+```
+
+Who has a job: 
+```{r}
+# only person with a non-zero wage has a job
+wage <- c(3000, 2000, 0, 1000)
+haveJob <- as.logical(wage)
+haveJob
+```
+
+<div class="alert alert-info">
+`which()` applies to a logical vectors will tell you who have true value:
+
+```{r}
+whoHasAJob <- which(haveJob)
+whoHasAJob
+
+# the wages of those who have a job
+wage[whoHasAJob]
+```
+
+</div>
+
+#### on extended classes
+
+Extended class's value has a feature that it's stored values (i.e. storage type) may be different from it's printed values (i.e. what we see on name call or print).
+
+For extended classes, 
+
+  * `as.numeric()` works on the type of storage of the extended class.
+  
+  * `as.character()` works on the print out of the extended class.
+
+```{r}
+fct <- factor(
+  c('參','貮','貮','貮','壹','貮','參','貮','參','參'),
+  levels=c('壹','貮','參')
+  )
+
+dt <- lubridate::ymd_hms(
+  c('2012-08-25 19:36:00','2018-01-06 10:44:00','2010-03-08 00:56:00')
+)
+```
+
+```{r}
+print(fct)
+as.character(fct)
+
+typeof(fct)
+as.numeric(fct) # the positions in levels
+```
+
+<div class="exercise">
+How do you sum the following Chinese numbers? 
+```{r}
+c('參','貮','貮','貮','壹','貮','參','貮','參','參')
+```
+</div>
+<br>
+<div class="exercise">
+The following is 5 to 9 in Persian language:
+```{r}
+c("۵", "۶", "۷", "۸", "۹")
+```
+How do you sum the following Persian numbers? 
+```{r}
+c('۶','۹','۸','۹','۶','۸','۸','۵','۹','۹')
+```
+
+```{r, echo=F, eval=FALSE}
+fct2 <- factor(
+  c('۶','۹','۸','۹','۶','۸','۸','۵','۹','۹'),
+  levels=c("۵", "۶", "۷", "۸", "۹")
+)
+sum(as.numeric(fct2))+4
+```
+
+</div>
+
+```{r}
+print(dt)
+as.character(dt)
+
+typeof(dt)
+as.numeric(dt) # how many seconds past 1970-01-01 00:00
+```
+
+<div class="alert alert-info">
+A date/time class vector can take numerical operations. The operations are based on its type values.
+
+```{r}
+dt
+dt + 30 # add 30 seconds
+dt + 60*60 # add 1 hour
+```
+
+</div>
+
+***
+
+##### An exercise{-}
+
+<div class="alert alert-info">
+Since date/time is stored as seconds past 1970-01-01 00:00, `lubridate::as_datetime()` can convert a numeric value (in second unit) into a date/time class value
+```{r}
+x0 <- 1595950405 # the number of seconds
+lubridate::as_datetime(x0)
+```
+
+  * `lubridate::as_datetime()` treats a number as how many seconds have past since 1970-01-01 00:00:00. 
+  
+</div>
+
+In same cases such as Google data, time stamp is framed in milliseconds (1000 ms = 1 second) past 1970-01-01 00:00:00.000. So 1 = 1970-01-01 00:00:00.001.
+
+```{r}
+location_history <- jsonlite::fromJSON("https://www.dropbox.com/s/db2vt4w9u2w7onx/Location%20History.json?dl=1")
+```
+
+```{r}
+print(location_history$locations$timestampMs)
+```
+
+  * must divide by $10^3$ (`10**3` in code)to make it in second unit before feeding to `lubridate::as_datetime()`.
+
+```{r}
+location_history$locations$timestampMs/(10**3)
+```
+
+-   raise an error, indicate `lubridate::as_datetime()` can only apply to numeric values.
+
+```{r}
+timeStampMs_as.numeric <- 
+  as.numeric(
+    location_history$locations$timestampMs
+  )
+timeStamp_inSecondUnit <-
+  timeStampMs_as.numeric/(10**3)
+
+timeStamp_dateTimeClass <-
+  lubridate::as_datetime(
+    timeStamp_inSecondUnit
+  )
+```
+
+-   `as.numeric()` to convert to numeric values.
+
+-   `/(10**3)` to convert milliseconds to seconds.
+
+## Programming Block
+
+When task goal achievement requires multiple steps, it is good to use **programming block** `{...}` to put all the steps in one big `{ }` chunk. 
+
+  * `{...}` codes work as without `{...}` before; but...
+  
+  * it gives flexibility of result binding, where result is the **last-executed** line inside `{...}` (whose value will be temporarily saved at `.Last.value`)
+  
+  * `a <- {...}`, `{...}-> a`, `a={...}`. All three will bind `.Last.value` to `a`.
+  
+Most task involves with getting some result value and bind (save) it to an object name. To get the result value, we layout steps to obtain the result. Using programming block, we can formulate a task as:
+
+```{r}
+task_result <- {
+  # step 1: 
+  
+  # step 2: 
+  
+  # final step:
+}
+```
+
+Take converting character millisecond time stamp to a date/time class as an example. 
+
+Task goal: Obtain a data/time class result value
+
+Planning our steps:
+
+  * Step 1: convert character to numeric
+  
+  * Step 2: given step 1 result, change millisecond to second unit
+  
+  * Step 3: given step 2 result, convert numeric seconds to date/time class
+  
+```{r}
+timeStamp_dateTimeClass <- 
+  {
+    # Step 1: convert character to numeric
+    
+    # Step 2: given step 1 result, change millisecond to second unit
+    
+    # Step 3: given step 2 result, convert numeric seconds to date/time class
+    
+  }
+```
+
+Then we ask ourselves for each step, how do I program it correctly.
+
+```{r}
+timeStamp_dateTimeClass <- 
+  {
+    # Step 1: convert character to numeric
+    as.numeric(location_history$locations$timestampMs) -> step1
+    
+    # Step 2: given step 1 result, change millisecond to second unit
+    step1/(10**3) -> step2
+    
+    # Step 3: given step 2 result, convert numeric seconds to date/time class
+    lubridate::as_datetime(step2)
+  }
+```
+
+<div class="alert alert-info">
+In RStudio, you can click `{...}` to fold or unfold the block. 
+You can also select the whole block and press Ctrl+Enter (in Windows) or Command+Enter (in Mac) to execute just that block. Then check `.Last.Value`. 
+</div>
+
+
+## Operations on atomic vectors
+
+In this section, we learn operations that works on **ALL ATOMIC** vectors regardless of their class.
+
+  * If apply to **list**, it will be unlist by coercion. 
+
+## Methods of each class
+
+This section is about
+
+> What we can do to each class of object
+
+> Most of them only works on atomic vectors
+
+### Equal, One of them, Identical
+
+Equal(`==`):
+
+```{r}
+x1 <- c(1, 3, 6)
+y1 <- c(2, 3, 6)
+x1 == y1
+
+x2 <- c("John", "Mary", "Ben")
+y2 <- c("John", "Ken", "Bill")
+x2 == y2
+```
+
+If the vector has same element values, you can write just the value:
+
+```{r}
+x3 <- c(1, 3, 6)
+y3 <- c(3, 3, 3)
+x3 == y3
+# the same as
+x3 == 3
+
+x4 <- c("John", "Mary", "Ben")
+y4 <- c("John", "John", "John")
+x4 == y4
+x4 == "John"
+```
+
+One of them
+
+```{r}
+x5 <- c(1, 3, 6)
+y5 <- c(3, 6, 1)
+# Are they elementwise equal
+x5 == y5
+# Is each element of x5 part of y5? 
+x5 %in% y5
+```
+
+### Relational operation
+
+```{r}
+c(1,2) >= c(1,3)
+```

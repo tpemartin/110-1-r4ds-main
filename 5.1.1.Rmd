@@ -1,0 +1,103 @@
+# 5.1.1 For each observation
+
+```{r}
+dataSet <- list(
+  list(
+    gender="male", height=178, age=32,
+    children=list(
+      list(gender="male", age=5),
+      list(gender="male", age=0))
+  ),
+  list(
+    gender="female", height=166, age=30,
+    children=list(
+      list(gender="female", age=3))
+  ),
+  list(
+    gender="male", height=170, age=42,
+    children=list(
+      list(gender="male", age=10),
+      list(gender="female", age=8))
+  ),
+  list(
+    gender="male", height=188, age=22,
+    children=list()
+  ),  
+  list(
+    gender="male", height=172, age=52,
+    children=list(
+      list(gender="female", age=25),
+      list(gender="female", age=23))
+  ),
+  list(
+    gender="female", height=160, age=42,
+    children=list(
+      list(gender="female", age=11))
+  )
+)
+```
+
+
+```{r}
+analysis <- list()
+analysis$number_of_children <- list()
+
+analysis$number_of_children[[1]] <-length(dataSet[[1]]$children)
+analysis$number_of_children[[2]] <-length(dataSet[[2]]$children)
+analysis$number_of_children[[3]] <-length(dataSet[[3]]$children)
+analysis$number_of_children[[4]] <-length(dataSet[[4]]$children)
+analysis$number_of_children[[5]] <-length(dataSet[[5]]$children)
+analysis$number_of_children[[6]] <-length(dataSet[[6]]$children)
+```
+
+
+```{r}
+analysis <- list()
+analysis$number_of_children <- vector("list", length=6)
+
+for(.x in c(1, 2, 3, 4, 5, 6))
+{
+  # .x pattern
+  analysis$number_of_children[[.x]] <- length(dataSet[[.x]]$children)
+}
+
+
+```
+
+```{r}
+c(1, 2, 3, 4, 5, 6) # the same as
+1:6 # because 6 comes from length(dataSet)
+1:length(dataSet) 
+```
+
+```{r}
+# if dataSet is empty, length(dataSet)=0
+1:0
+# the best way define iterate set is to use
+seq_along(dataSet)
+
+dataSet0 <- list()
+seq_along(dataSet0)
+```
+
+integer(0) is not 
+```{r}
+c(0)
+```
+but a vector of nothing (with type integer)
+
+
+```{r}
+analysis <- list()
+analysis$number_of_children <- vector("list", length=6)
+for(.x in seq_along(dataSet)){
+  # .x-pattern
+  analysis$number_of_children[[.x]] <-length(dataSet[[.x]]$children)
+}
+analysis$number_of_children
+class(analysis$number_of_children) # a list
+```
+
+
+
+

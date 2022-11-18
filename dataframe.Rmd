@@ -1,0 +1,239 @@
+# 4.2.4 Data frame
+
+```{r}
+survey_fbf <-
+  list(
+    age=c(54, 32, 28, 20), # age
+    gender=c("male", "female", "female", "male"), # gender
+    residence=c("north", "south", "east", "east"), # residence
+    income=c(100, 25, NA, 77) # income
+  )
+```
+
+```{r}
+survey_df <-
+  data.frame(
+    age=c(54, 32, 28, 20), # age
+    gender=c("male", "female", "female", "male"), # gender
+    residence=c("north", "south", "east", "east"), # residence
+    income=c(100, 25, NA, 77) # income
+  )
+```
+
+```{r}
+data.frame(
+  data_list # atomic feature vectors and named with same length
+)
+```
+
+
+```{r}
+survey_df <-
+  data.frame(
+    survey_fbf # name call on survey_fbf
+  )
+```
+
+```{r}
+class(survey_fbf)
+class(survey_df)
+```
+
+
+```{r}
+survey_df <- 
+  data.frame(
+    list(
+      age=c(54, 32, 28, 20), # age
+      gender=c("male", "female", "female", "male"), # gender
+      residence=c("north", "south", "east", "east"), # residence
+      income=c(100, 25, NA, 77) # income
+    )
+  )
+```
+
+```{r}
+survey_df <- 
+  data.frame(
+
+      age=c(54, 32, 28, 20), # age
+      gender=c("male", "female", "female", "male"), # gender
+      residence=c("north", "south", "east", "east"), # residence
+      income=c(100, 25, NA, 77) # income
+ 
+  )
+```
+
+```{r}
+commonClasses <- list() # declare
+commonClasses$data_frame <- survey_df
+```
+
+```{r}
+survey_fbf
+survey_df
+```
+
+
+***
+
+feature vectors not all atomic vectors--some are list
+
+```{r}
+survey_fbf2 <-
+  list(
+    age=list(54, 32, 28, 20), # age
+    gender=list("male", "female", "female", "male"), # gender
+    residence=list("north", "south", "east", "east"), # residence
+    income=list(100, 25, NA, 77) # income
+  )
+```
+
+```{r}
+data.frame(survey_fbf2) # the same as
+data.frame(
+  list(
+    age=list(54, 32, 28, 20), # age
+    gender=list("male", "female", "female", "male"), # gender
+    residence=list("north", "south", "east", "east"), # residence
+    income=list(100, 25, NA, 77) # income
+  )
+)
+```
+
+```{r}
+df_survey_fbf2 <- 
+  list2DF(survey_fbf2)
+
+df_survey_fbf2
+```
+
+data frame is an extended class from list. It inherits all the features of list.
+
+```{r}
+survey_fbf$age
+df_survey_fbf <- data.frame(survey_fbf)
+df_survey_fbf$age
+```
+
+  - inheritance feature from Object-Oriented Programming (OOP)
+
+```{r}
+# list
+survey_fbf2$age
+# data frame
+df_survey_fbf2$age
+```
+
+```{r}
+df_survey_fbf
+df_survey_fbf2
+```
+
+not only inherits methods of list (what list can do), but also has more methods (but also can do more)
+
+```{r}
+[.row , .col] # is an extension from [] extraction
+```
+
+```{r}
+commonClasses$data_frame
+commonClasses$data_frame[2, "age"]
+commonClasses$data_frame[2, 1]
+commonClasses$data_frame[c(1,4), c("income","age")]
+commonClasses$data_frame[c(1,4), c(4, 1)]
+```
+
+ * [], [.row, .col] will return value with a structure as the source. 
+
+```{r}
+# Remove
+commonClasses$data_frame
+commonClasses$data_frame[, -c(2)]
+# Replace
+commonClasses$data_frame
+commonClasses$data_frame[2, c( "age","income")] 
+commonClasses$data_frame[2, c( "age","income")] <- 
+  data.frame(
+    age=c(31),
+    income=c(22)
+  )
+commonClasses$data_frame[2, c( "age","income")] 
+
+commonClasses$data_frame[2, c( "age","income")] <- 
+  data.frame(
+    31, 
+    22
+    )
+
+commonClasses$data_frame[c(1,2), c("age", "income")]
+commonClasses$data_frame[c(1,2), c("age", "income")] <- data.frame(
+  c(10, 15),
+  c(10, 15)
+)
+commonClasses$data_frame[c(1,2), c("age", "income")]
+# Add
+commonClasses$data_frame[, "age"] # take one existing column to observe its structure, which is c(...)
+commonClasses$data_frame[, "isStudent"] <- 
+  data.frame(isStudent=c(T, T, F, T))
+commonClasses$data_frame[, "isStudent"] <- 
+  data.frame(c(T, T, F, T))
+commonClasses$data_frame[, "isStudent"] <-
+  c(T, T, F, T)
+commonClasses$data_frame[, "isStudent"]
+```
+
+```{r}
+# a list
+survey_fbf[2, c(1, 3)]
+# a data frame
+survey_df[2, c(1, 3)]
+```
+
+# 4.2.5 Matrix
+
+
+```{r}
+commonClasses$matrix <- matrix(
+  c(2, 11, -1, 3, 4, -5), 
+  nrow=2, 
+  byrow = F # default is by column
+)
+
+
+commonClasses$matrix
+
+class(commonClasses$matrix)
+```
+
+
+```{r}
+# non atomic matrix
+matrix_nonAtomic <- matrix(
+  list(
+    32, "John", 
+    33, "Jane", 
+    34, "Ben"
+    ), nrow=2
+)
+matrix_nonAtomic
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

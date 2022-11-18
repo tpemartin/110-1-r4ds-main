@@ -1,0 +1,176 @@
+## 4.7 Summarise one vector
+
+```{r}
+dates <- c('2016-11-15','NA','NA','1997-05-07','1995-08-25','2002-09-20','NA','NA','NA','1995-07-16', '2011-06-22')
+grades <- c(29,53,26,27,55,69,NA,NA,63,NA,56)
+genders <- c('Male','Female','Male','Male','Female','Female',NA,'Male','Male','Female','Female')
+majors <- c('economics','economics',NA,'economics','economics','economics','economics','statistics','law','economics','law')
+
+dataSet <- 
+data.frame(
+  date= dates,
+  grade= grades,
+  gender= genders,
+  major= majors
+)
+
+analysis <- list()
+analysis$data <- dataSet
+```
+
+```{r}
+View(dataSet)
+```
+
+```{r}
+dataSet$date |> class()
+dataSet$date |> lubridate::ymd() -> dataSet$date
+
+analysis$data <- dataSet
+```
+
+## analysis
+
+```{r}
+anyNA(dates)
+dates |> is.na() |> sum() -> analysis$dates$na$sum
+anyNA(grades)
+grades |> is.na() |> sum() -> analysis$grades$na$sum
+
+saveRDS(analysis, file="analysis.Rds")
+# turn off computer
+```
+
+  * only need to save ONE object
+  
+  * a list gives me ability to use menu to manage my analysis process. 
+
+
+```{r}
+analysis = readRDS("analysis.Rds")
+analysis$grades$na$sum
+analysis$data -> dataSet
+
+```
+
+```{r}
+dates |> is.na() |> sum() -> a
+grades |> is.na() |> sum() -> b
+save(a, b, file="mywork.Rdata") # turnoff computer
+```
+
+```{r}
+load("mywork.Rdata")
+```
+
+***
+
+Next day
+
+```{r}
+analysis= readRDS("analysis.Rds")
+dates <- analysis$data$date
+View(analysis$data)
+```
+
+
+```{r}
+class(dates)
+typeof(dates)
+
+dates |> range() # minimal and maximal
+dates |> range(na.rm=T) -> analysis$dates$range
+analysis$dates$range
+grades <- analysis$data$grade
+grades |> range(na.rm=T) -> analysis$grades$range
+analysis$grades$range
+
+
+grades |> median(na.rm=T) -> analysis$grades$median
+
+analysis$grades$median
+
+grades |> mean(na.rm=T) -> analysis$grades$mean
+```
+
+```{r}
+length(grades)
+analysis$grades$na$sum
+```
+
+
+We have 11 students in the data set. For their grades,  3 are missing. The median grade is 54 (which means among 8 students with grades, 4 are lower than 54; 4 are higher than 54). The average grade is 47.25. 
+
+```{r}
+genders <- analysis$data$gender
+genders |> class()
+genders |> factor() -> genders
+
+genders |> levels() # only works for factor
+```
+
+
+```{r}
+majors <- analysis$data$major
+majors |> class()
+
+majors |> unique() # returns a vector, data frame or array like x but with duplicate elements/rows removed.
+```
+
+```{r}
+majors |> is.na() |> sum() -> analysis$majors$na$sum
+majors |> factor() -> majors -> analysis$data$major
+
+levels(majors)
+```
+
+* majors feature.
+
+There are 11 students. One's major is missing. The remaining 10 students have majors from economics(7 students), law(2 students) and statistics(1 student).
+
+```{r}
+table(majors)
+
+saveRDS(analysis, file="analysis.Rds")
+```
+
+```{r}
+dataSet0 <- 
+  data.frame(
+    dates = c('2016-11-15','1997-05-07','NA','NA','1997-05-07','1995-08-25','2002-09-20','NA','NA','NA','1995-07-16', '2011-06-22', '2016-11-15'),
+    grades = c(29,27, 53,26,27,55,69,NA,NA,63,NA,56, 29),
+    genders = c('Male','Male', 'Female','Male','Male','Female','Female',NA,'Male','Male','Female','Female','Male'),
+    majors = c('economics','economics', 'economics',NA,'economics','economics','economics','economics','statistics','law','economics','law','economics')
+)
+View(dataSet0)
+```
+
+```{r}
+View(dataSet0)
+duplicated(dataSet0)
+whichIsDuplicated <- which(duplicated(dataSet0))
+dataSet0[whichIsDuplicated, ]
+
+dataSet0[-whichIsDuplicated, ] -> dataSet0
+View(dataSet0)
+```
+
+```{r}
+dataSet0 <- unique(dataSet0)
+View(dataSet0)
+```
+
+```{r}
+# na is removed before table summarisation
+genders |> table()
+# preliminary summary should include NA summary
+genders |> table(useNA = "always") -> analysis$genders$table
+analysis$genders$table
+```
+
+```{r}
+analysis=readRDS("analysis.Rds")
+analysis$genders$table
+```
+
+

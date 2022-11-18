@@ -1,0 +1,301 @@
+
+```{r}
+example1 <- c("John", "Mary", "Bill")
+example1[[4]]
+example1[[4]] <- "Ken" # binding a value to some non-existent retrieval.
+
+#
+example1 <- c("John", "Mary", "Bill")
+example1[["person4"]] 
+example1[["person4"]] <- "Ken"
+example1[["person4"]]
+
+# becomes
+c("John", "Mary", "Bill", "person4"="Ken")
+
+# retrieve an non-existing element name "person4"
+example1[["person4"]] <- "Ken"
+```
+
+```{r}
+example1 <- c("John", "Mary", "Bill")
+
+# to becomse 
+# c("John", "Mary", "Bill", "Jack", "person5"="Janem")
+# If the 5 elements vector is the value, then
+example1[c(4, 5)]
+# will get us
+c("Jack", "person5"="Janem")
+```
+
+
+```{r}
+example1[c(4, 5)] <- c("Jack", "person5"="Janem")
+example1
+```
+
+ * bind a value to an existing object's retrieval (such as replacement, adding values):
+ 
+   * we only update element **values** but not **element names**
+   
+```{r}
+example1 <- c("John", "Mary", "Bill")
+
+example1[[4]] <- "Jack"
+example1[["person5"]] <- "Janem"
+
+example1
+```
+
+***
+
+```{r}
+example1 <- c("John", "Mary", "Bill")
+
+# ("John", "Mary", "Bill", "person4"="Jack", "person5"="Janem")
+example1[c("person4", "person5")] 
+example1[c("person4", "person5")] <- c("Jack", "Janem")
+example1[c("person4", "person5")] 
+example1
+```
+
+```{r}
+# retrieve two non-existing element positions
+example1[c(7,8)] <- c("person7"="Jack", "Janem")
+example1
+```
+
+***
+
+```{r}
+JohnsFamily <-
+  list(
+    name = "John", 
+    age = 35,
+    spouse = list(
+      name = "Mary", 
+      age = 32),
+    children = list(
+      list(
+        name = "Bill", 
+        age = 5),
+      list(
+        name = "Jane", 
+        age = 3)
+    )
+  )
+```
+
+
+
+
+```{r}
+JohnsFamilyCopy2 <- JohnsFamily
+# Add a new born
+```
+
+```{r}
+newBorn <- list(
+  name="Lisa",
+  age=0
+)
+```
+
+```{r}
+JohnsFamilyCopy2$children[[3]] <- newBorn
+# do name call on newBorn
+JohnsFamilyCopy2$children[[3]] <- list(
+  name="Lisa",
+  age=0
+)
+```
+
+***
+Ex 3.4
+```{r}
+JohnsFamilyCopy2 <- JohnsFamily
+
+JohnsFamilyCopy2$children[2]
+# [] used for multiple retrieval. respect source object's structure
+
+# source object 
+JohnsFamilyCopy2$children
+# structure of the source object
+typeof(JohnsFamilyCopy2$children)
+
+# the same
+list(
+  list(
+    name="Jane",
+    age=3
+  )
+)
+```
+
+
+```{r}
+JohnsFamilyCopy2$children[[3]] <- 
+  list(name="Lisa", age=0) # $ is for list only
+```
+
+### 3.4.2 Data construction
+
+
+```{r}
+height <- c("001"=177, "002"=183, "003"=173)
+```
+
+```{r}
+rm(height)
+```
+
+```{r}
+height <- c("001"=177, "002"=183, "003"=173)
+
+height[["001"]]
+height[["002"]]
+height[["003"]]
+```
+
+```{r}
+rm(height)
+
+# if height exists but no following three element names inside,
+height[["001"]] <- 177
+height[["002"]] <- 183
+height[["003"]] <- 173
+```
+
+  * In each line, R does **name call** first. (name call on height)
+
+```{r}
+# make height exist first, but no element values
+height <- numeric(0)
+```
+
+```{r}
+height[["001"]] <- 177 
+height[["002"]] <- 183
+height[["003"]] <- 173
+```
+
+  * Declaration makes name call on height have meaning.
+
+```{r}
+height
+```
+
+
+
+
+```{r}
+rm(height)
+# make height exist first, but no element values
+height <- numeric()
+
+height[["001"]] <- 177 
+height[["002"]] <- 183
+height[["003"]] <- 173
+```
+
+Usage
+myfun(length=1)
+
+  * 1 is the default value of length
+
+```{r}
+myfun(1)
+myfun(2) # length=2
+```
+
+```{r}
+myfun() # when length input missing, then use 1 to be length value
+```
+
+
+```{r}
+# yr108 semester 1
+course1 <- 
+  list(
+    name="programming for data science",
+    credit=2
+  )
+course2 <- 
+  list(
+    name="accounting",
+    credit=3
+  )
+```
+
+```{r}
+# yr107 semester2
+course3 <-
+  list(
+    name="philosophy",
+    credit=2
+  )
+```
+
+
+```{r}
+classSchedule <- list() # declare
+```
+
+```{r}
+# yr108 semester 1
+classSchedule$yr108$semester1[[1]] <- course1
+classSchedule$yr108$semester1[[2]] <- course2
+# yr107 semester2
+classSchedule$yr107$semester2[[1]] <- course3
+```
+
+```{r}
+classSchedule
+```
+
+
+```{r}
+classSchedule$yr108$semester1[[1]] <- course1 # add
+```
+
+
+```{r}
+classSchedule$yr108$semester1[[1]] <- 
+  list(
+    name="programming for data science",
+    credit=2
+  )
+ 
+```
+
+The same as direct method:
+```{r}
+classSchedule <- list(
+  yr108 = list(
+    semester1 = list(
+      course1,
+      course2
+    )
+  ),
+  yr107 = list(
+    semester2 = list(
+      course3
+    )
+  )
+)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,194 @@
+
+```{r}
+example2 <- c("John", "Mary", "Bill", person4="Jack")
+```
+
+
+```{r}
+example2 <- example2[c(1, 2, 3)]
+```
+
+
+```{r}
+c(1,2,3) # sequence of numbers
+```
+
+```{r}
+1:3
+```
+
+```{r}
+example2 <- c("John", "Mary", "Bill", person4="Jack")
+example2 <- example2[1:3]
+example2
+```
+
+```{r}
+7:11
+```
+
+```{r}
+2:-1
+```
+
+
+```{r}
+1:3 # the same as
+seq(from=1, to=3, by=1) # from 1 to 3 increase by 1
+```
+
+```{r}
+seq(from=3, to=11, by=4) # from 3 to 11 increase by 4
+
+seq(from=3, to=11, by=5) # from 3 to 11 increase by 4
+```
+
+```{r}
+seq(from=7, to=15, length.out=3)
+```
+
+```{r}
+seq(from=3, to=11, length.out=10) # divide interval [3, 11] into 10 equal length cuts
+```
+
+***
+
+```{r}
+example3 <- c("John", "Mary", "Bill", person4="Jack") # character vector
+
+## inclusive approach
+example3[c(1, 2, 3)]
+
+## exclusive approach
+# I don't want 4th elements
+example3[-c(4)]
+
+## multiple exclusion is possible
+example3[-c(1, 4)] # don't want 1st, 4th elements
+example3[c(2, 3)]
+```
+
+```{r}
+example4 <- c("John", "Mary", "Bill", person4="Jack")
+
+# # inclusive approach
+# example4 <- example4[1:3]
+
+# Object source <- retrieval of elements to keep
+example4 <-
+  example4[-c(4)]
+
+example4
+```
+
+```{r}
+example5 <- c("John", "Mary", "Bill", person4="Jack")
+
+# ERROR
+example5[-c("person4")]
+```
+
+
+
+```{r}
+example3 <- c("John", "Mary", "Bill", person4="Jack")
+```
+
+```{r}
+## exclude 2 to 4
+example3[-c(2, 3, 4)] # the same as 
+example3[c(1)]
+```
+
+```{r}
+# replace c(2, 3, 4) with 2:4
+example3[-2:4]
+```
+
+  * R generates a sequence from -2 to 4
+  
+```{r}
+# we want R generates a sequence from 2 to 4 first, then take negative.
+
+-(2:4)
+```
+
+```{r}
+## exclude 2 to 4
+example3[-c(2, 3, 4)] # the same as 
+example3[-(2:4)]
+```
+
+***
+
+```{r}
+example6 <- list("John", "Mary", "Bill", person4="Jack")
+```
+
+```{r}
+example6[1:3]
+example6[-c(4)]
+```
+
+***
+
+list has a direct removal method
+
+```{r}
+JohnsFamily <-
+  list(
+    name = "John", 
+    age = 35,
+    spouse = list(
+      name = "Mary", 
+      age = 32),
+    children = list(
+      list(
+        name = "Bill", 
+        age = 5),
+      list(
+        name = "Jane", 
+        age = 3)
+    )
+  )
+JohnsFamilyCopy5 <- JohnsFamilyCopy6 <- JohnsFamilyCopy7 <- JohnsFamilyCopy8 <-  JohnsFamily
+```
+
+***
+want to remove 3rd element value
+
+save-what-you-want approach:
+```{r}
+JohnsFamilyCopy5 <- 
+  JohnsFamilyCopy5[-c(3)] # remove spouse element
+```
+
+direct removal: (only on list)
+```{r}
+JohnsFamilyCopy6$spouse <- NULL
+```
+
+```{r}
+JohnsFamilyCopy7[c(3, 4)] <- NULL
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

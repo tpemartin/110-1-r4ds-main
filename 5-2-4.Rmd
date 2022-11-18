@@ -1,0 +1,41 @@
+## 5.2.4 for each group
+
+```{r}
+dataSet1 <- 
+  data.frame(
+    team=c('team 2','team 3','team 1','team 2','team 3','team 1','team 2','team 1','team 3','team 2','team 3','team 1','team 3','team 1','team 2'),
+    entranceYear = c(100,100,101,100,100,100,101,100,100,101,101,100,101,100,100),
+    grade=c(98,95,76,87,67,83,84,94,70,64,99,77,89,62,65)
+  )
+```
+
+```{r}
+split(dataSet1, dataSet1$team) -> grouped_dataset1
+
+View(grouped_dataset1)
+```
+
+```{r}
+dataSet1$team |> factor() -> dataSet1$team
+dataSet1$entranceYear |> factor() -> dataSet1$entranceYear
+dataSet1$team:dataSet1$entranceYear -> .interaction
+print(.interaction)
+dataSet1$interaction <- .interaction
+
+class(.interaction)
+View(dataSet1)
+
+dataSet1 |> 
+  split(.interaction) -> grouped_dataSets2
+
+View(grouped_dataSets2)
+```
+
+
+
+
+
+
+
+
+

@@ -15,22 +15,35 @@ In johnDoe data,
 
 1. Find the subsample of those whose report unit (通報機關名稱) has the term “海巡隊” (i.e. detect “海巡隊”) in its name.
 
+```{r}
+pick <- johnDoe$data$通報機關名稱
+subsample <- johnDoe$data[pick, ]
+```
+
 2. How many different different 海巡隊 are there? Each reported how many dead bodies.
 
 ```{r}
 # 1
 pick15_1 <- stringr::str_detect(johnDoe$data$通報機關名稱, "海巡隊")
 johnDoe$data[which(pick15_1), ] -> subsample
+# which ignore NA comparison, pick will not ignore but create more NA in your choice. 
+# pick => sum(na.rm=T)
+# regex 
 View(subsample)
 # 2
 subsample$通報機關名稱 |> unique() |> length()
 subsample$通報機關名稱 |> table() |> View()
+subsample$通報機關名稱 |> table() |> length()
 table(johnDoe$data$通報機關名稱[which(pick15_1)])
 ```
 
 Exercise 4.16 In johnDoe data set,
 
 1. Add a column called 發現日期 to johnDoe$data which is a date class vector.
+
+```{r}
+johnDoe$data[["發現日期"]] <- 
+```
 
 2. How many dead bodies have no discovered dates?
 
@@ -44,6 +57,7 @@ chr_dates <- paste(
   johnDoe$data$發現日, 
   sep="-"
 )
+print(chr_dates)
 johnDoe$data$發現日期 <- lubridate::ymd(chr_dates)
 ## johnDoe$data$發現日期 |> class()
 # 2
@@ -54,12 +68,12 @@ johnDoe$data$發現日期 |> is.na() |> sum()
 johnDoe$data$發現月 |> table() -> tb_months
 tb_months |> max() -> maxValue
 whichIsMax <- which(tb_months == maxValue)
-tb_months[whichIsMax]
+tb_months[whichIsMax] |> names()
 
 ## Or
 johnDoe$data$發現月 |> table() -> tb_months
-whichIsMax <- which.max(table(johnDoe$data$發現月))
-tb_months[whichIsMax]
+whichIsMax <- which.max(tb_months)
+tb_months[whichIsMax] |> names()
 ```
 
 ## Exercise 4.17 In johnDoe data set,
@@ -69,15 +83,24 @@ tb_months[whichIsMax]
 
 ```{r, echo=FALSE}
 .season <- johnDoe$data$發現月 |> factor()
+levels(.season)
+
 levels(.season) <-
   c(
-    rep("winter", 2),
+    rep("winter", 2), # "
     rep("spring", 3),
     rep("summer", 3),
     rep("fall", 3),
     "winter"
   )
 johnDoe$data$發現季節 <- .season
+
+table(johnDoe$data$發現季節)
+
+factor(johnDoe$data$發現季節, levels=c("spring", "summer", "fall", "winter")) -> johnDoe$data$發現季節
+table(johnDoe$data$發現季節)
+
+
 ```
 
   2. In each season, how many dead bodies were discovered?
@@ -118,13 +141,33 @@ paste(
 
 Exercise 4.19 Obtain `wdi` object from exercise 5 of the Exercise section. The following questions focus **only** on year 2000 (which means all the following questions implicitly start with the expression, **for those from year 2000**.)
 
+```{r}
+wdi <- list()
+wdi$source[[1]] <- "https://databank.worldbank.org/source/world-development-indicators#"
+wdi$source[[2]] <- "https://docs.google.com/spreadsheets/d/1XHxjE3DIIdvNL-kbLR_bktxiHxmk23S6lUmn89WEedM/edit?usp=sharing"
+wdi$meta <- "https://docs.google.com/spreadsheets/d/1C8b-liC8Gl9Kmkexb5uq1_TUIE3lYOt4PutPlOne80g/edit?usp=sharing"
+wdi$data <- googlesheets4::read_sheet(
+  wdi$source[[2]]
+)
+```
+
+
 ```{r, echo=F}
-data2000 <- wdi$data |> subset(year==2000)
+pick2000 <- wdi$data$year == 2000
+data2000 <- wdi$data[pick2000, ]
+
+data2000 <- subset(
+  wdi$data, 
+  year==2000)
 View(data2000)
 ```
 
   1. How many observations are there?
-  
+ 
+```{r}
+nrow(data2000)
+```
+ 
   2. The followings are `iso2c` values that represent a **region** but not a country. Take a subsample that excludes those **region** (i.e. a subsample that consists of countries),
 
 ```{r}
@@ -132,6 +175,12 @@ iso2c_nonCountry <- c('ZH','ZI','1A','S3','B8','V2','Z4','4E','T4','XC','Z7','7E
 ```
   
 ```{r, echo=F}
+pick_not_country <- 
+  data2000$iso2c %in% iso2c_nonCountry
+pick_country <- !(data2000$iso2c %in% iso2c_nonCountry)
+pick_country <- !pick_not_country
+subsample2000 <- data2000[pick_country, ]
+
 data2000 |> subset(!(iso2c %in% iso2c_nonCountry)) -> 
   subsample2000
 View(subsample2000)
@@ -148,6 +197,11 @@ subsample2000$country |> length()
 
 
   4. Regarding **Energy use (kg of oil equivalent per capita)**. Complete the following summary:
+  
+```{r}
+subsample2000$EG.USE.PCAP.KG.OE
+```
+
 
 > For Energy use (kg of oil equivalent per capita), there are ... observations with ... missing values. Excluding missing values, the range of energy use is between ... and ... kg/per capita of oil equivalent with median usage of ... and mean usage of ... .
 

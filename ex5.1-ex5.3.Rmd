@@ -14,17 +14,38 @@ Data set `concerts_obo` has difference performance information as its observatio
 
 ```{r, echo=FALSE}
 concerts_obo[[5]]$showInfo |> length()
+length(concerts_obo[[5]]$showInfo)
 ```
  
   2. If we are to find out the number of shows **for each** performance, what is the **.x-pattern**?
 
+```{r}
+length(concerts_obo[[.x]]$showInfo) # .x=5
+length(concerts_obo[[.x]]$showInfo) # .x =6
+length(concerts_obo[[.x]]$showInfo) # .x = 7
+```
+
 ```{r, echo=FALSE}
 # Assume number_of_shows object exists
 number_of_shows[[.x]] <- concerts_obo[[.x]]$showInfo |> length()
+# or
+number_of_shows[[.x]] <-length(concerts_obo[[.x]]$showInfo)
 ```
   
   3. Find out the number of shows **for each** performance, and put the answer as an integer vector under `analysis$number_of_shows`. (i.e. `analysis$number_of_shows[[5]]` will show your answer in 1.)
   
+```{r}
+length(concerts_obo[[.x]]$showInfo) # .x=5
+length(concerts_obo[[.x]]$showInfo) # .x =6
+length(concerts_obo[[.x]]$showInfo) # .x = 7
+```
+
+```{r}
+for(.x in 1:6){
+  length(concerts_obo[[.x]]$showInfo)
+}
+```
+ 
 ```{r, echo=FALSE}
 number_of_shows <- vector("integer", length(concerts_obo))
 for(.x in seq_along(concerts_obo)){
@@ -35,7 +56,69 @@ print(number_of_shows)
 ```
 
   4. Construct a data frame with columns, **title**, **date**, **location** and **locationName**, where **title** comes from each observation's title, and the rest three are from each observation's 1st showInfo. In addition, **date** column has to be "POSIXct" "POSIXt" class with Taipei time zone.
-  
+
+```{r}
+data.frame(
+  title=...,
+  date=..., # date-time class
+  location=...,
+  locationName=...
+)
+```
+
+```{r}
+# 1st concert .x=1
+titleX = concerts_obo[[.x]]$title
+dateX = concerts_obo[[.x]]$showInfo[[1]]$time
+locationX = concerts_obo[[.x]]$showInfo[[1]]$location
+locationNameX = concerts_obo[[.x]]$showInfo[[1]]$locationName
+
+# 2nd concert .x=2
+titleX = concerts_obo[[.x]]$title
+dateX = concerts_obo[[.x]]$showInfo[[1]]$time
+locationX = concerts_obo[[.x]]$showInfo[[1]]$location
+locationNameX = concerts_obo[[.x]]$showInfo[[1]]$locationName
+
+# 3rd concert .x=3
+titleX = concerts_obo[[.x]]$title
+dateX = concerts_obo[[.x]]$showInfo[[1]]$time
+locationX = concerts_obo[[.x]]$showInfo[[1]]$location
+locationNameX = concerts_obo[[.x]]$showInfo[[1]]$locationName
+
+
+```
+
+
+```{r}
+# .x-pattern
+titleX = concerts_obo[[.x]]$title
+dateX = concerts_obo[[.x]]$showInfo[[1]]$time
+locationX = concerts_obo[[.x]]$showInfo[[1]]$location
+locationNameX = concerts_obo[[.x]]$showInfo[[1]]$locationName
+
+```
+
+```{r}
+.title <- .date <- .location <- .locationName <- character(length(concerts_obo))
+for(.x in seq_along(concerts_obo)){
+  # .x-pattern
+  .title[[.x]] = concerts_obo[[.x]]$title
+  .date[[.x]] = concerts_obo[[.x]]$showInfo[[1]]$time
+  .location[[.x]] = concerts_obo[[.x]]$showInfo[[1]]$location
+  .locationName[[.x]] = concerts_obo[[.x]]$showInfo[[1]]$locationName
+}
+showDF <- 
+data.frame(
+  title=.title,
+  date = lubridate::ymd_hms(.date, tz="Asia/Taipei"),
+  location = .location,
+  locationName = .locationName
+)
+
+View(showDF)
+```
+
+
 ```{r, echo=F}
 number_of_concerts <- length(concerts_obo)
 .titles <- .dates <- .locations <- .locationNames <- character(number_of_concerts)
@@ -56,6 +139,12 @@ View(latestShow)
 ```
 
   * `if(pick5_1_4[[.x]]==T){` can be reduced to `if(pick5_1_4[[.x]]){` since `pick5_1_4[[.x]]` is already logical.
+  
+```{r}
+flag_up 
+if(flag_up)
+```
+  
   * When the same `iterate generation` happens several time, try to combine the .x-patterns. 
    <https://github.com/AmyChen20021003/110-1-r4ds-main/blob/fdca3bce1bf5fbe8fdad6f52abe8ac7cc6ff3dd8/5-1.Rmd#L32>
 
@@ -69,30 +158,54 @@ drug$data <-
   googlesheets4::read_sheet(
     drug$source[[1]]
   )
+drug$data |> View()
 ```
 
 ```{r, echo=F}
 drug$data |> View()
 .df <- drug$data
+names(.df) <- # character value vector
+.df[1, ] |> View() # data frame is list
+unlist(.df[1, ])
 names(.df) <- .df[1, ] |> unlist()
+View(.df)
 .df <- .df[-1, ]
-names(.df)[5:7] |> teachDS::writeObject2Clip(T)
-.df[c('發生場所一','發生場所二','發生場所三')] |> unlist() |> table() |> View()
-.df$發生場所一 |> table() |> View()
+View(.df)
 ```
 
   1. For each kind of drug (`毒品品項`), what was the average amount of drug (the mean of `數量（淨重）_克`) found?
+  
+
 
 ```{r, echo=F}
 .df <- drug$data
-
-# fixed column names
-names(.df) <- .df[1, ] |> unlist()
-.df <- .df[-1, ]
+.df$毒品品項 |> table() |> View()
 
 .df$`數量（淨重）_克` |>
   as.numeric() -> .df$`數量（淨重）_克`
+
+# for each group algorithm,
 .df |> split(.df$毒品品項) -> grouped_dfs
+```
+
+```{r}
+mean(grouped_dfs[[.x]]$`數量（淨重）_克`, na.rm=T)
+mean(grouped_dfs[[.x]]$`數量（淨重）_克`, na.rm=T)
+mean(grouped_dfs[[.x]]$`數量（淨重）_克`, na.rm=T)
+
+```
+
+```{r}
+averageAmounts <- vector("double", length(grouped_dfs))
+for(.x in seq_along(grouped_dfs)){
+  mean(grouped_dfs[[.x]]$`數量（淨重）_克`, na.rm=T) -> averageAmounts[[.x]]
+}
+names(averageAmounts) <- names(grouped_dfs)
+averageAmounts
+```
+
+
+```{r, echo=F}
 averageAmounts <- vector("double", length(grouped_dfs))
 for(.x in seq_along(grouped_dfs)){
   averageAmounts[[.x]] <- 
@@ -118,10 +231,21 @@ For the following question, we only consider those `毒品品項` that contains 
 ```{r, echo=FALSE}
 pick <- .df$毒品品項 |> stringr::str_detect("安非他命")
 subsample <- .df[pick, ]
-
+View(subsample)
 ```
 
   3. For each year, what was the total amount found? (Apply `lubridate::year()` to `date` column will get you year)
+  
+```{r}
+# for each group
+subsample$date |> lubridate::year() ->
+  subsample$year
+View(subsample)
+subsample |> split(
+  subsample$year
+  ) -> subsample_byYear
+```
+
 
 ```{r, echo=FALSE}
 subsample$date |> lubridate::year() -> years
@@ -154,7 +278,26 @@ p*=a+bq*.
 ```
 1. Run the following code and solve for equilibrium and save it in a list with two element names q_star and p_star. Each has its value in corresponding to q* and p* that your program solved.
 ```{r}
+solve_equilibrium <- function(){
+  q_star=(a-c)/(d-b) # 4 name calls on a, b, c, d
+  p_star=a+b*q_star # 3 name calls on a, b, 
+  equilibrium = list(
+    "q_star"=q_star,
+    "p_star"=p_star
+  )
+  equilibrium
+}
+
+
 a=1; b=-3; c=0; d=1
+solve_equilibrium()
+
+# solve_equilibrium() # function call
+a=2; b=-3; c=0; d=1
+solve_equilibrium()
+
+a=1; b=-3; c=0; d=1.5
+solve_equilibrium()
 ```
 
 ```{r, echo=FALSE}
@@ -198,16 +341,19 @@ solve_equilibrium <- function(){
   q_star <- (a-c)/(d-b)
   p_star <- a+b*q_star
   equilibrium <- list("q_star"=q_star, "p_star"=p_star)
+  a <- 1
   equilibrium
 }
 
 a=1; b=-3; c=0; d=1
 equilibrium1 <- solve_equilibrium()
 print(equilibrium1)
+a
 
 a=2; b=-3; c=0; d=1
 equilibrium2 <- solve_equilibrium()
 print(equilibrium2)
+a 
 
 a=1; b=-3; c=0; d=1.5
 equilibrium3 <- solve_equilibrium()

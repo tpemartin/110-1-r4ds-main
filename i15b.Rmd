@@ -1,0 +1,11 @@
+
+```{r}
+a <- x
+```
+
+```{r}
+library(gitterhub)
+gh <- githubService()
+gh$list_issue_commentsFromIssueUrl("https://github.com/tpemartin/110-1-r4ds-main/issues/15") -> comments
+```
+

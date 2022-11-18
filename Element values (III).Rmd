@@ -1,0 +1,108 @@
+
+```{r}
+JohnsFamily <-
+  list(
+    name = "John", # 1st element; named element
+    age = 35,
+    spouse = list(
+      name = "Mary", 
+      age = 32),
+    children = list(
+      list(
+        name = "Bill", 
+        age = 5),
+      list(
+        name = "Jane", 
+        age = 3)
+    )
+  )
+```
+
+```{r}
+JohnsFamilyCopy <- JohnsFamily
+
+JohnsFamilyCopy[[1]] 
+JohnsFamilyCopy[[1]] <- "Watson" 
+JohnsFamilyCopy[[1]]
+
+JohnsFamilyCopy[["name"]] <- "John"
+JohnsFamilyCopy[[1]]
+```
+
+
+```{r}
+JohnsFamilyCopy <- JohnsFamily
+# name to "Watson"
+JohnsFamilyCopy[["name"]] <- "Watson"
+# age to 37
+JohnsFamilyCopy[["age"]] <- 37
+JohnsFamilyCopy
+```
+
+```{r}
+JohnsFamilyCopy <- JohnsFamily
+
+# name and age to "Watson" and 37
+JohnsFamilyCopy[c("name", "age")] <- 
+  list(
+    name = "Watson",
+    age = 37
+  )
+
+JohnsFamilyCopy
+```
+
+
+```{r}
+# JohnsFamilyCopy[c("name", "age")]
+list(
+  name = "John",
+  age = 35
+)
+```
+
+
+```{r}
+# name and age to "Dickens" and 32
+JohnsFamilyCopy[c("name", "age")] <- 
+  list(
+    "Dickens",
+    32
+  )
+JohnsFamilyCopy
+```
+
+
+```{r}
+JohnsFamilyCopy <- JohnsFamily
+# spouse age is wrong. 
+JohnsFamilyCopy$spouse$age
+JohnsFamilyCopy$spouse[["age"]]
+#  correct it to 33
+33 -> JohnsFamilyCopy$spouse$age
+JohnsFamilyCopy$spouse[["age"]]
+
+
+# the 1st child's name is wrong
+JohnsFamilyCopy$children[[1]]$name
+JohnsFamilyCopy$children[[1]]$name = "Gary"
+JohnsFamilyCopy$children[[1]][["name"]]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

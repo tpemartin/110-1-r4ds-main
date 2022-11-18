@@ -1,0 +1,71 @@
+
+
+```{r}
+typeof(c("John", "Mary"))
+typeof(c(2, 3.1412))
+typeof(c(TRUE, TRUE, F))
+```
+
+
+```{r}
+class(c("John", "Mary"))
+class(c(2, 3.1412))
+class(c(TRUE, TRUE, F))
+```
+
+**class** is a categorisation method that categorises different values based on **what we can do with those values**.
+
+  
+  * type: man and woman
+  
+  * class: difference based on skills. (plumber class, teacher class)
+  
+***
+
+```{r}
+# date time information
+dateTimeInfo <- "2021-01-01 12:03:33"
+typeof(dateTimeInfo)
+```
+
+
+```{r}
+class(dateTimeInfo)
+```
+
+```{r}
+dateTimeInfo + 20
+# character class value + 20
+```
+
+ we can choose proper parsing function to teach R understand a date time value is more than a character--teach R understand a class called date/time.
+ 
+```{r}
+dateTimeInfo2 <- lubridate::ymd_hms("2021-01-01 12:03:33")
+class(dateTimeInfo2)
+```
+
+  * lubridate::ymd_hms is a parsing function to teach R understand date time. 
+ 
+```{r}
+dateTimeInfo2 + lubridate::seconds(20)
+```
+
+type: how we store **raw** information
+
+class: what we (R) can do with different informations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
